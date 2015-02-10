@@ -1,0 +1,56 @@
+{% extends "dashboard.html" %}
+ {% load payroll_filter %}
+{% block title %}Hour Attendance{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'hour_attendance_register' %}">Hour Attendance Register</a></li>
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+{% load compress %}
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+     {% compress js %}
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block pageheader %}
+    Hour Attendance Register
+{% endblock %}
+
+
+{% block content %}
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th>Date</th>
+        <th>Voucher No.</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Employee</th>
+        <th>Working Time</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        {% for i in data.0 %}
+        {% with j=forloop.counter|add:-1 %}
+            <tr>
+
+                    <td>{{ i.date }}</td>
+                    <td>{{ i.voucher_no }}</td>
+                    <td>{{ i.from_date }}</td>
+                    <td>{{ i.to_date }}</td>
+                    <td>{{ i.employee }}</td>
+                    <td>{{ tot_work|index:j|ssb:0 }}</td>
+
+                    <td>
+                        <a href ="/payroll/attendance-voucher/{{ i.id }}/">Edit</a>
+                    </td>
+        {% endwith %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

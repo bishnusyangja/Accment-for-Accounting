@@ -1,0 +1,168 @@
+$(document).ready(function () {
+    $(document).on("click", ".date-picker", function () {
+        $(this).datepicker('show');
+    });
+});
+
+function BankDepositViewModel(data) {
+    var self = this;
+
+    self.particulars = new TableViewModel({rows: data.rows}, BankDepositRow);
+<<<<<<< Updated upstream
+
+
+
+=======
+>>>>>>> Stashed changes
+    for (var k in data)
+        self[k] = ko.observable(data[k]);
+
+    $.ajax({
+        url: '/ledger/accounts.json',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            self.accounts = data;
+        }
+    });
+
+    self.attachment = ko.observable();
+
+    self.grand_total = function () {
+        var total = 0;
+        $.each(self.particulars.rows(), function () {
+            if (isAN(this.amount()))
+                total += parseFloat(this.amount());
+        });
+        return rnum(total);
+    }
+
+    self.approve = function (item, event) {
+        $.ajax({
+            type: "POST",
+            url: '/bank/bank-deposit/approve/',
+            data: ko.toJSON(self),
+            success: function (msg) {
+                if (typeof (msg.error_message) != 'undefined') {
+                    bs_alert.error(msg.error_message);
+                    self.state('error');
+                }
+                else {
+//                        bs_alert.success('Approved!');
+                    bs_alert.success('Approved!');
+//                        self.state('success');
+                    self.status('Approved');
+                    if (msg.id){
+                        self.id(msg.id);
+                        }
+                    if (msg.redirect_to){
+                        //sconsole.log("entered redirect");
+                        window.location = msg.redirect_to;
+                        return;
+                        }
+                }
+            }
+        });
+    }
+
+
+}
+
+function BankDepositRow(row) {
+
+    var self = this;
+    //default values
+    self.from_account = ko.observable();
+
+    self.has_from_account = function(){
+         if(typeof(self.from_account()) != 'undefined')
+            return true;
+         else
+            return false;
+
+    }
+
+    self.reference_no = ko.observable();
+    self.description = ko.observable();
+    self.amount = ko.observable();
+
+    for (var k in row) {
+        if (row[k] != null)
+            self[k] = ko.observable(row[k]);
+    }
+}
+
+
+function BankPaymentViewModel(data) {
+    var self = this;
+
+    self.particulars = new TableViewModel({rows: data.rows}, BankPaymentRow);
+
+    for (var k in data)
+        self[k] = ko.observable(data[k]);
+
+    $.ajax({
+        url: '/ledger/accounts.json',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            self.accounts = data;
+        }
+    });
+
+    self.attachment = ko.observable();
+
+    self.grand_total = function () {
+        var total = 0;
+        $.each(self.particulars.rows(), function () {
+            if (isAN(this.amount()))
+                total += parseFloat(this.amount());
+        });
+        return rnum(total);
+    }
+
+    self.approve = function (item, event) {
+        $.ajax({
+            type: "POST",
+            url: '/bank/bank-payment/approve/',
+            data: ko.toJSON(self),
+            success: function (msg) {
+                if (typeof (msg.error_message) != 'undefined') {
+                    bs_alert.error(msg.error_message);
+                    self.state('error');
+                }
+                else {
+//                        bs_alert.success('Approved!');
+                    bs_alert.success('Approved!');
+//                        self.state('success');
+                    self.status('Approved');
+                    if (msg.id){
+                        self.id(msg.id);
+                        }
+                    if (msg.redirect_to){
+                        //sconsole.log("entered redirect");
+                        window.location = msg.redirect_to;
+                        return;
+                        }
+                }
+            }
+        });
+    }
+
+
+}
+
+function BankPaymentRow(row) {
+
+    var self = this;
+    //default values
+    self.to_account = ko.observable();
+    self.reference_no = ko.observable();
+    self.description = ko.observable();
+    self.amount = ko.observable();
+
+    for (var k in row) {
+        if (row[k] != null)
+            self[k] = ko.observable(row[k]);
+    }
+}

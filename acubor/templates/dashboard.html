@@ -1,0 +1,457 @@
+<!DOCTYPE HTML>
+<html>
+{% load filters %}
+{% load compress %}
+<head>
+  <title>{% block title %}{% endblock %}</title>
+
+  <link href="{{ STATIC_URL }}css/vendors/bootstrap.min.css" rel="stylesheet"/>
+  <link href="{{ STATIC_URL }}css/vendors/bootstrap-responsive.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"/>
+
+    <link href="{{ STATIC_URL }}css/vendors/w8-responsive.min.css" rel="stylesheet"/>
+
+    <link href="{{ STATIC_URL }}css/vendors/w8.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/w8-skins.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/datepicker.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/select2.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/print.css" rel="stylesheet" media="print"/>
+
+    <link href="{{ STATIC_URL }}css/styles.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/base.css" rel="stylesheet"/>
+
+    <script src="{{ STATIC_URL }}js/vendors/jquery.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/w8-elements.min.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/w8.min.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/bootstrap.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/bootstrap-datepicker.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/select2.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
+    <script src="{{STATIC_URL}}js/vendors/jquery.geocomplete.min.js" ></script>
+    <script src="{{STATIC_URL}}js/vendors/humane.min.js" ></script>
+    <link href="{{ STATIC_URL }}css/vendors/bigbox.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/jackedup.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/libnotify.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.0/css/bootstrapValidator.min.css"/>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.0/js/bootstrapValidator.min.js"></script>
+    {% compress js %}
+    <script src="{{ STATIC_URL }}js/base.js"></script>
+    <script src="{{ STATIC_URL }}js/up_down.js"></script>
+    {% endcompress %}
+    <link rel="shortcut icon" href="{{ STATIC_URL }}website/images/ico/favicon.png" type="image/png">
+    {% load filters %}
+    <script>
+    global_settings =
+    {{ request|get_settings|jsonify }}
+
+    </script>
+
+    {% block extra-head %}{% endblock %}
+
+  </head>
+
+  <body>
+    <div class="container-fluid" id="main-container">
+      <div class="navbar navbar-fixed-top navbar-inverse" >
+        <div class="navbar-fixed-top navbar-inner">
+          {% if user.is_authenticated %}
+            <ul class="nav nav-pills" style="min-height:50px;margin-bottom:0px;">
+              <li class="dropdown" style="min-height: 50px;background:#990033;" title='{{ request.user.currently_activated_company }}' rel='tooltip' data-placement='bottom'>
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle"><b>{{ request.user.currently_activated_company|truncatechars:17 }}{% if request.user.currently_activated_company|length > 17 %}...{% endif %}</b><b class="caret"></b></a>
+                <ul class="dropdown-menu" id="menu12">
+                  {% for role in request.user.roles.all %}
+                  {% if role.company.id != request.user.currently_activated_company.id %}
+                  <li>
+                      <a href="/user/set-company/{{ role.company.id }}">Use as {{ role.company }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+                  <li>
+                    <a href="/user/company/setup/"><b>Create New Company</b></a>
+                  </li>
+                </ul>
+              </li>
+              {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Auditor' 'Accountant' 'Bookkeeper'%}
+              {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Day Journal<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu10">
+                  {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Accountant' 'Bookkeeper' %}
+                  <li><a href="/day/">Day Journal</a></li>
+                  {% endifusergroup %}
+                  <li><a href="/day/journals2/{% now "Y" %}/ ">Register</a> </li>
+                </ul>
+              </li>
+              {% if request.user.currently_activated_company.settings.lotto_tracking %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Scratch Off<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu9">
+                  {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Accountant' 'Bookkeeper' %}
+                  <li><a href="/day/scratch-off-latest/">Entry</a></li>
+                  {% endifusergroup %}
+                  <li><a href="/day/scratch-off-latest-register/">Register</a> </li>
+                </ul>
+              </li>
+              {% endif %}
+              {% endif %}
+
+              {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Accountant' 'Bookkeeper' %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Entries <b class="caret"></b></a>
+                <ul class="dropdown-menu" id="menu1">
+                  {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+                  <li><a href="/day/">Day Journal</a></li>
+                  {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                  <li><a href="/day/scratch-off-latest/">Scratch Off Entry</a></li>
+                  {% endif %}
+                  <li><a href="/voucher/journal/">Journal Voucher</a></li>
+                  {% else %}
+                  <li><a href="/voucher/invoice/">Invoice</a></li>
+                  <li><a href="/voucher/purchase-voucher/">Purchase Voucher</a></li>
+                  <li><a href="/voucher/journal/">Journal Voucher</a></li>
+                  <li><a href="/voucher/fixed-asset/">Fixed Asset</a></li>
+                  <li class="dropdown-submenu">
+                    <a href="#">Bank</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/bank/bank-deposit/">Bank Deposit</a> </li>
+                      <li><a href="/bank/bank-payment/">Bank Payment</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu">
+                    <a href="#">Cash</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/voucher/cash-receipt/">Cash Receipt</a> </li>
+                      <li><a href="/voucher/cash-payment/">Cash Payment</a> </li>
+                    </ul>
+                  </li>
+                  {% endif %}
+                  {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                  <li><a href="/inventory/physicalstock/">Physical Stock Voucher</a></li>
+                  {% endif %}
+                  <li><a href="/payroll/attendance-ledger/">Attendence Entry</a> </li>
+                  <li class="dropdown-submenu">
+                    <a href="#">Payroll Entries</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/payroll/group-voucher/">Group Payroll</a> </li>
+                      <li><a href="/payroll/individual-voucher/">Individual Payroll</a> </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              {% endifusergroup %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Books<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu8">
+                  <li><a href="/ledger/">Account Books</a> </li>
+                  {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" or request.user.currently_activated_company.settings.company_type == "Gas Station" %}
+                  {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <li><a href="/inventory/items/">Inventory Books</a> </li>
+                  {% endif %}
+                  {% endif %}
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Registers<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu2">
+                  {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+                  <li><a href="/day/journals2/{% now "Y" %}/">Day Journal Register</a> </li>
+                  <li><a href="/voucher/journals/">Journal Register</a> </li>
+                  {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                  <li><a href="/day/scratch-off-latest-register/">Scratch Off Register</a> </li>
+                  {% endif %}
+                  {% else %}
+                  <li><a href="/voucher/invoices/">Sales Register</a></li>
+                  <li><a href="/voucher/purchase-vouchers">Purchase Register</a> </li>
+                  <li><a href="/voucher/journals/">Journal Register</a> </li>
+                  <li><a href="/voucher/fixed-assets/">Fixed Assets Register</a> </li>
+                  <li class="dropdown-submenu">
+                    <a href="#">Bank Registers</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/bank/bank-deposits/">Bank Deposits</a> </li>
+                      <li><a href="/bank/bank-payments/">Bank Payments</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu">
+                    <a href="#">Cash Registers</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/voucher/cash-receipts/">Cash Receipts</a> </li>
+                      <li><a href="/voucher/cash-payments/">Cash Payments</a> </li>
+                    </ul>
+                  </li>
+                  {% endif %}
+                  <li><a href="/payroll/register/">Payroll Register</a> </li>
+                  <li><a href="/payroll/attendance-ledger/">Attendence Register</a> </li>
+                </ul>
+              </li>
+              {% if request.user.currently_activated_company.settings.company_type != "Gas Station and Store" and request.user.currently_activated_company.settings.company_type != "Convenience Store" %}
+              {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Accountant' 'Bookkeeper' %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Customers<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu7">
+                  <li><a href="#">Summary</a> </li>
+                  {% if request.user.currently_activated_company.settings.company_type != "Gas Station and Store" and request.user.currently_activated_company.settings.company_type != "Convenience Store" %}
+                    <li><a href="/voucher/invoice/">Sales</a> </li>
+                    <li><a href="/voucher/cash-receipts/">Receipts</a> </li>
+                  {% else %}
+                    <li><a href="/day/">Sales</a> </li>
+                    <li><a href="/day/">Receipts</a> </li>
+                  {% endif %}
+                  <li><a href="#">Movement</a> </li>
+                  <li><a href="#">Debit Note</a> </li>
+                  <li><a href="#">Credit Note</a> </li>
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Vendors<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu6">
+                  <li><a href="#">Summary</a> </li>
+                  {% if request.user.currently_activated_company.settings.company_type != "Gas Station and Store" and request.user.currently_activated_company.settings.company_type != "Convenience Store" %}
+                    <li><a href="/voucher/purchase-voucher/">Purchase</a> </li>
+                    <li><a href="/voucher/cash-payment/">Payments</a> </li>
+                  {% else %}
+                    <li><a href="/day/">Purchase</a> </li>
+                    <li><a href="/day/">Payments</a> </li>
+                  {% endif %}
+                  <li><a href="#">Movement</a> </li>
+                  <li><a href="#">Debit Note</a> </li>
+                  <li><a href="#">Credit Note</a> </li>
+                </ul>
+              </li>
+              {% endifusergroup %}
+              {% endif %}
+              {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+              {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                  <li class="dropdown">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">Inventory<b class="caret"></b> </a>
+                    <ul class="dropdown-menu" id="menu3">
+                      <li><a href="#">Summary</a> </li>
+                      <li><a href="#">Registers</a> </li>
+                      <li><a href="#">Stock Journals</a> </li>
+                    </ul>
+                  </li>
+              {% endif %}
+              {% endif %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Reports<b class="caret"></b> </a>
+                <ul class="dropdown-menu" id="menu4">
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Financial Reports</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/report/trial-balance/">Trial Balance</a> </li>
+                      <li><a href="/report/balance-sheet/">Balance Sheet</a> </li>
+                      <li><a href="/report/profit-and-loss/{% now "m-d-Y" %}/">Profit & Loss</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Management Reports</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/voucher/all-unapproved-vouchers/">Unapproved Vouchers</a> </li>
+                      <li><a href="/day/cash-short-access-report/">Cash Short/Excess Report</a> </li>
+                    </ul>
+                  </li>
+
+                  {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+                  {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <li><a href="#">Inventory Summary</a> </li>
+                  {% endif %}
+                  {% endif %}
+                </ul>
+              </li>
+
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Attachments<b class="caret"></b> </a>
+                <ul class="dropdown-menu pull-left" id="menu11">
+                  <li><a href="/user/user_attachments/">Attachment Entry</a> </li>
+                  <li><a href="/user/list-attachments/">Attachment Register</a> </li>
+                </ul>
+              </li>
+              {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Accountant' 'Bookkeeper' %}
+              <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Settings<b class="caret"></b> </a>
+                <ul class="dropdown-menu pull-left" id="menu5">
+                  <li><a href="/settings/company/">Company Settings</a> </li>
+                  <!--<li><a href="/settings/voucher/">Voucher Settings</a> </li>-->
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Account Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/create/">Create Single</a> </li>
+                      <li><a href="/ledger/create/multiple-account/">Create Multiple</a> </li>
+                      <li><a href="/ledger/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Account Category Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/category/create/">Create Single</a> </li>
+                      <li><a href="/ledger/create/multiple-category/">Create Multiple</a> </li>
+                      <li><a href="/ledger/categories/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+                  {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Inventory Settings</a>
+                    <ul class="dropdown-menu ">
+                      <li class="dropdown-submenu pull-left">
+                        <a href="#">Items Setting</a>
+                        <ul class="dropdown-menu ">
+                          <li><a href="/inventory/create_item/">Create New</a> </li>
+                          <li><a href="/inventory/items/">View/Edit</a> </li>
+                        </ul>
+                      </li>
+                      <li class="dropdown-submenu pull-left">
+                        <a href="#">Category Setting</a>
+                        <ul class="dropdown-menu pull-left">
+                          <li><a href="/inventory/category/create/">Create New</a> </li>
+                          <li><a href="/inventory/categories/">View/Edit</a> </li>
+                        </ul>
+                      </li>
+                      <li class="dropdown-submenu pull-left">
+                        <a href="#">Units Setting</a>
+                        <ul class="dropdown-menu pull-left">
+                          <li><a href="/inventory/unit/create/">Create New</a> </li>
+                          <li><a href="/inventory/units/">View/Edit</a> </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                  {% endif %}
+                  {% endif %}
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Bank Account Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/create/bank-account/">Create New</a> </li>
+                      <li><a href="/bank/accounts/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Party Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/party/create/">Create New</a> </li>
+                      <li><a href="/ledger/parties/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Tax Scheme Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/tax_scheme/create/">Create New</a> </li>
+                      <li><a href="/ledger/tax_schemes/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Interest Scheme Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/ledger/interest_scheme/create/">Create New</a> </li>
+                      <li><a href="/ledger/interest_schemes/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  <li class="dropdown-submenu pull-left">
+                    <a href="#">Employee Setting</a>
+                    <ul class="dropdown-menu pull-left">
+                      <li><a href="/payroll/employee/create/">Create New Employee</a> </li>
+                      <li><a href="/payroll/employees/">View/Edit</a> </li>
+                    </ul>
+                  </li>
+                  {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                    <li><a href="/user/roles/">Users Settings</a></li>
+                    <li><a href="/user/subscription/status/">Subscription Settings</a></li>
+                  {% endifusergroup %}
+                </ul>
+              </li>
+              {% endifusergroup %}
+              {% endifusergroup %}
+              </ul>
+              <ul class="nav nav-pills pull-right" style="min-height:50px;margin-bottom:0px;">
+                  <li class="dropdown" style="min-height:50px;background:#1F5C3D;" title='{{ user.username }}' rel='tooltip' data-placement='bottom'>
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><b>{{ user.username|truncatechars:17 }}{% if user.username|length > 17 %}...{% endif %}</b><b class="caret"></b></a>
+                      <ul class="dropdown-menu pull-left" id="menu13">
+                        <li><a href="/user/logout">Logout</a></li>
+                      </ul>
+                  </li>
+              </ul>
+          {% endif %}
+
+      </div>
+      </div>
+      <div style="height:50px; width:100%"></div>
+      <div id="breadcrumbs">
+          <ul class="breadcrumb">
+            {% block breadcrumbs %}
+            <li>
+              <i class="icon-home"></i>
+              <a href="/application/">Dashboard</a>
+              <span class="divider"><i class="icon-angle-right"></i>
+              </span>
+            </li>
+            {% endblock %}
+          </ul>
+          <!--.breadcrumb-->
+
+          <div class="pull-right">
+            {% block controls %}
+            <a href="javascript:window.print();"><i class="icon-print"></i> Print</a>
+            {% endblock %}
+          </div>
+
+      </div>
+      <div id="main-content" class="clearfix">
+        <div id="page-content" class="clearfix">
+          {% block broadcast_messages %}
+          {% if request.user.currently_activated_company.is_test_company %}
+          <div class="alert alert-error no-print">
+            You are using Accment for a Demo Company. You can play around most of the features but don't save the
+            real data of your actual Company. It is accessible to everyone who sign's up in Accment. And the data
+            that you entered will be regularly deleted. We won't be held responsible for the loss of data stored in
+            Demo Company account. To add your own company please create a new company by going into
+            <a href="/user/company/setup/">this link.</a>
+          </div>
+          {% endif %}
+          {% endblock %}
+
+          {% block noscriptcheck %}
+          <noscript>
+            <div class="alert alert-danger">
+              <i class="fa fa-times fa-2x mydanger" style="float:left;"></i>
+              <h4>&nbsp;&nbsp;For full functionality of this site it is necessary to enable JavaScript.
+                Here are the <a href="http://www.enable-javascript.com/" target="_blank">
+                instructions how to enable JavaScript in your web browser</a>.</h4>
+              </div>
+
+              <style>
+              .mydanger {
+                color: #ff0000;
+              }
+              </style>
+            </noscript>
+            {% endblock %}
+
+            <div class="page-header position-relative">
+              <h1>{% block pageheader %}{% endblock %}</h1>
+            </div>
+
+            <div id="alert_placeholder"></div>
+
+            {% block content %}{% endblock %}
+          </div>
+      </div>
+      <br/>
+      <br/>
+      <br/>
+    </div>
+
+      <a href="#" id="btn-scroll-up" class="btn btn-small btn-inverse">
+        <i class="icon-double-angle-up icon-only bigger-110"></i>
+      </a>
+      <div id="footer">
+          <div class="footer">
+            <p>Copyright 2014 <a href="http://www.accment.com">Acubor LLC</a>.</p>
+          </div>
+      </div>
+  </body>
+
+</html>

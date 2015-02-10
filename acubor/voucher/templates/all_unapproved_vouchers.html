@@ -1,0 +1,43 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Unapproved Voucher{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "all_unapproved_vouchers" %}">Unapproved Vouchers</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Unapproved Vouchers
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load voucher_filter %}
+{% autosort datas as sorted_objects %}
+{% autopaginate sorted_objects 25 as paginated_objects %}
+{% paginate %}
+<table class="table table-bordered table-striped table-sortable table-acubor">
+    <thead>
+        <td>Item</td>
+        <td>Date</td>
+        <td>Item Type</td>
+        <td>Status</td>
+    </thead>
+    <tbody>
+    {% for item in paginated_objects %}
+    <tr>
+        <td><a href="{{ item.get_absolute_url }}">{{ item }}</a></td>
+        <td>{{ item.date }}</td>
+        <td>{{ item|typeof }}</td>
+        {% if item.status == 'Unapproved' %}
+        <td style="color:red;">{{ item.status }}</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% paginate %}
+{% endblock %}

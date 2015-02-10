@@ -1,0 +1,412 @@
+{% extends "dashboard.html" %}
+
+{% block breadcrumbs %}
+<li>
+    <i class="icon-home"></i>
+    <a href="{% url "home" %}">Dashboard</a>
+</li>
+
+{% endblock %}
+
+
+{% block title %}Acubor Accounting Dashboard {% endblock %}
+
+{% block extra-head %}
+{% load compress %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/vendors/jquery.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/vendors/typeahead.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/vendors/highcharts.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/vendors/jquery-ui.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/vendors/drilldown.js"></script>
+<link href="{{ STATIC_URL }}css/vendors/jquery.treetable.css" rel="stylesheet" type="text/css"/>
+
+{#<link href="{{ STATIC_URL }}css/vendors/jquery.treetable.theme.default.css" rel="stylesheet"#}
+<script src="{{ STATIC_URL }}js/vendors/jquery.treetable.js"></script>
+{% compress js %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/sales_distribution_chart.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/income_expense_chart.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/sales_chart.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/income_expense_drilldown_chart.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
+{% endcompress %}
+
+{% endblock %}
+
+{% load filters %}
+{% load humanize %}
+{% load users_extra_filters %}
+
+{% block content %}
+
+{% ifusergroup 'Employee' %}
+
+        <script type="text/javascript">
+            function make_2_digit(num){
+                var s_num = num.toString()
+                if (s_num.length == 1)
+                    return '0' + s_num;
+                else
+                    return num.toString();
+            }
+
+
+            function return_time(){
+                var list = [];
+                var today = new Date();
+                var day = today.getFullYear() + '-' + make_2_digit(today.getMonth()+1) + '-' + make_2_digit(today.getDate());
+                list.push(day);
+                var h = today.getHours();
+                var m = today.getMinutes();
+                var time = '';
+                if (h >= 12){
+                    if (h>12) h = h - 12;
+                    time = make_2_digit(h) + ':' + make_2_digit(m) + ' PM'
+                }
+                else{
+                    if(h==0) h = 12;
+                    time = make_2_digit(h) + ':' + make_2_digit(m) + ' AM'
+                }
+                list.push(time);
+                return list;
+            }
+
+            $(document).ready(function(){
+                $('#input-time-in1').attr('disabled', true);
+                $('#input-time-out1').attr('disabled', true);
+                $('#input-time-in2').attr('disabled', true);
+                $('#input-time-out2').attr('disabled', true);
+
+                $('.time').click(function(){
+                    id = $(this).attr('id');
+                    var to_save = return_time();
+                    $('#' + id).attr('disabled', true);
+                    $('#input-'+id).val(to_save[1]);
+                    save_time(id, to_save);
+                });
+            });
+
+            function save_time(id, value){
+                $.ajax({
+                    type: 'POST',
+                    url: '/user/save-time/',
+                    dataType: 'html',
+                    data: {'id':id, 'day':value[0], 'time': value[1], csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function(msg){
+                        msg = $.parseJSON(msg);
+                        if (msg.error){
+                            bs_alert.error(msg.error);
+                        }
+                        else{
+                            bs_alert.success('Data saved successfully');
+                        }
+                    }
+                });
+            }
+
+        </script>
+
+        <div class="row-fluid">
+        <div class="pull-left span6" style=" background-color:#f7f7f7; padding:5%; padding-top:2%;">
+            <h4>Shift 1</h4>
+            <div class="row-fluid">
+                <div class="pull-left">
+                    <button class="btn btn-primary btn-large time" id="time-in1">Time In</button>
+                </div>
+                <div class="pull-right">
+                    <input id="input-time-in1" type="text" />
+                </div>
+
+            </div>
+
+            <div style="margin-top:10px; " class="row-fluid">
+                <div class="pull-left">
+                    <button class="btn btn-primary btn-large btn-danger time" id="time-out1">Time Out</button>
+                </div>
+                <div class="pull-right">
+                    <input id="input-time-out1" type="text" />
+                </div>
+            </div>
+        </div>
+
+        <div class="pull-right span6" style="background-color:#f7f7f7; padding:5%; padding-top:2%;">
+            <h4>Shift 2</h4>
+            <div class="row-fluid">
+                <div class="pull-left">
+                    <button class="btn btn-primary btn-large time" id="time-in2">Time In</button>
+                </div>
+                <div class="pull-right">
+                    <input id="input-time-in2" type="text" />
+                </div>
+
+            </div>
+
+            <div style="margin-top:10px;" class="row-fluid">
+                <div class="pull-left">
+                    <button class="btn btn-primary btn-large btn-danger time" id="time-out2">Time Out</button>
+                </div>
+                <div class="pull-right">
+                    <input id="input-time-out2" type="text" />
+                </div>
+            </div>
+        </div>
+        </div>
+        <br/>
+        <br/>
+        <div><a href="/payroll/attendance-ledger/">View Your Attendance Report</a></div>
+        {% if request.user.currently_activated_company.settings.lotto_tracking %}
+        <br/>
+        <br/>
+        <div><a href="/day/scratch-off-latest/">Scratch Off Logging</a></div>
+        {% endif %}
+
+{% endifusergroup %}
+
+{% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' 'Auditor' 'Accountant' %}
+
+<div class="container">
+<div class="row" style="padding-left:2%;padding-right:1%;">
+  <div class="col-md-6 pull-left loading_chart" style="width:46%;height:250px;" id="sales_distribution_chart"> </div>
+  <div class="col-md-6 pull-right loading_chart" style="width:46%;height:250px;" id="sales_chart"></div>
+</div>
+<br/>
+<div class="row" style="padding-left:2%;padding-right:1%;">
+  <div class="col-md-6 pull-left loading_chart" style="width:46%;height:250px;" id="income_expense_drilldown_chart"> </div>
+  <div class="col-md-6 pull-right" style="background-color:#ddd;width:46%;height:250px;overflow:auto;">
+        <table  class="table table-striped table-acubor table-sortable tree-table customtreetable">
+        <thead>
+        <tr>
+            <th class="span4" colspan=2 style="text-align:center">Bank Summary</th>
+        </tr>
+        </thead>
+
+        <tr data-tt-id="13">
+            <td><strong>Total Bank Balance</strong></td>
+            <td style="text-align:right"><strong>{{bank_balance_total|floatformat:2|intcomma|intword|negativeformat|safe}}</strong>
+            </td>
+        </tr>
+        {% for bank_account in bank_details %}
+        <tr data-tt-id="{{ forloop.counter|add:13 }}" data-tt-parent-id="13">
+            <td>{{bank_account.0}}</td>
+            <td style="text-align:right">{{bank_account.1|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</div>
+<br/>
+{% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" or request.user.currently_activated_company.settings.company_type == "Gas Station" %}
+<div class="row" style="padding-left:2%;padding-right:1%;">
+  <div class="col-md-6 pull-left" style="background-color:#ddd;width:46%;height:250px;" >
+      <table  class="table table-striped table-acubor table-sortable tree-table customtreetable">
+        <thead>
+        <tr>
+            <th class="span4" colspan=2 style="text-align:center">Cash Summary</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr data-tt-id="4">
+                <td colspan="2"><strong>Cash</strong></td>
+            </tr>
+            <tr data-tt-id="5" data-tt-parent-id="4">
+                <td>Cash Actual</td>
+                <td style="text-align:right">{{cash_actual|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+            </tr>
+            <tr data-tt-id="6" data-tt-parent-id="4">
+                <td>Cash As Per Books</td>
+                <td style="text-align:right">{{cash_as_per_books|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+            </tr>
+            {% if cash_difference > 0 %}
+            <tr data-tt-id="7" data-tt-parent-id="4">
+                <td>Cash Difference</td>
+                <td style="text-align:right">{{cash_difference|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+            </tr>
+            {% elif cash_difference < 0 %}
+            <tr data-tt-id="7" data-tt-parent-id="4">
+                <td>Cash Difference</td>
+                <td style="text-align:right">{{cash_difference|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+  </div>
+  <div class="col-md-6 pull-right" style="background-color:#ddd;width:46%;height:250px;">
+        <table class="table table-striped table-acubor table-sortable tree-table customtreetable">
+        <thead>
+        <tr>
+            <th class="span4" colspan=2 style="text-align:center">Sales Summary</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr data-tt-id="1">
+            <td><strong>Total Sales</strong></td>
+            <td style="text-align:right">
+                <strong>{{sales_total|floatformat:2|intcomma|intword|negativeformat|safe}}</strong></td>
+        </tr>
+        <tr data-tt-id="2" data-tt-parent-id="1">
+            <td>Fuel Sales</td>
+            <td style="text-align:right">{{fuel_sales_total|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+        </tr>
+        <tr data-tt-id="3" data-tt-parent-id="1">
+            <td>Inside Sales</td>
+            <td style="text-align:right">{{inside_sales_total|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+        </tr>
+
+
+        </tbody>
+    </table>
+  </div>
+</div>
+<br/>
+{% endif %}
+<div class="row" style="padding-left:2%;padding-right:1%;">
+  <div class="col-md-6 pull-left" style="background-color:#ddd;width:46%;height:250px;" >
+     <table  class="table table-striped table-acubor table-sortable tree-table customtreetable">
+        <thead>
+        <tr>
+            <th class="span4" colspan=2 style="text-align:center">AR/AP Summary</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr data-tt-id="8">
+            <td><strong>Total Receivable</strong></td>
+            <td style="text-align:right">
+                <strong>{{receivable_total|floatformat:2|intcomma|intword|negativeformat|safe}}</strong></td>
+        </tr>
+        <tr data-tt-id="9">
+            <td><strong>Total Payable</strong></td>
+            <td style="text-align:right">
+                <strong>{{payable_total|floatformat:2|intcomma|intword|negativeformat|safe}}</strong></td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+  <div class="col-md-6 pull-right" style="background-color:#ddd;width:46%;height:250px;" >
+        <table  class="table table-striped table-acubor table-sortable tree-table customtreetable">
+        <thead>
+        <tr>
+            <th class="span4" colspan=2 style="text-align:center">Tax Summary</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr data-tt-id="10">
+            <td colspan="2"><strong>Tax</strong></td>
+        </tr>
+        <tr data-tt-id="11" data-tt-parent-id="10">
+            <td>Tax Due Upto Date</td>
+            <td style="text-align:right">{{tax_due_upto_date|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+        </tr>
+        <tr data-tt-id="12" data-tt-parent-id="10">
+            <td>Tax Paid Upto Date</td>
+            <td style="text-align:right">{{tax_paid_upto_date|floatformat:2|intcomma|intword|negativeformat|safe}}</td>
+        </tr>
+        </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+{% compress js %}
+<script type="text/javascript">
+    $(".customtreetable").treetable({initialState: 'expanded', clickableNodeNames: true, expandable: true });
+
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $("div#breadcrumbs div.pull-right").hide(); // Hide Print
+    $.ajax({
+        url: '/user/sales-pie-chart/',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data){
+            $('#sales_chart').removeClass("loading_chart");
+            if (data.sales_accounts !== 0 || data.sales_accounts != null){
+                new draw_sales_distribution(data.sales_accounts , 5);
+            }
+        }
+    });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $.ajax({
+        url: '/user/sales-line-chart/',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data){
+            $('#sales_distribution_chart').removeClass("loading_chart");
+            if(data.mon_name_sales !== 0 || data.mon_name_sales != null){
+                new draw_sales_chart(data.monthly_sum_sales, data.mon_name_sales);
+            }
+        }
+    });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $.ajax({
+        url: '/user/income-expense-chart/',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data){
+            $('#income_expense_drilldown_chart').removeClass("loading_chart");
+            if (data.mon_name_income !== 0 || data.mon_name_income != null){
+                new draw_income_expense_drilldown_chart({tot_inc:data.income_amount, tot_exp:data.expenses_amount , mon_inc:data.monthly_sum_income , mon_exp:data.monthly_sum_expenses, mon_name_inc:data.mon_name_income , mon_name_exp:data.mon_name_expenses});
+            }
+
+        }
+    });
+});
+/*
+if ({{mon_name_sales|jsonify}} !== 0){    
+    new draw_sales_chart({{ monthly_sum_sales|jsonify }}, {{mon_name_sales|jsonify }});
+}
+*/
+</script>
+
+
+<script type="text/javascript">
+        function date_calculator(id, difference){
+            var a = new Date();
+            var b = a.getTime();
+            var c = difference*24*60*60*1000;
+            var res = b-c;
+            a.setTime(res);
+            var month = (a.getMonth()+1).toString().length == 1 ? '0'+(a.getMonth()+1) : a.getMonth()+1;
+            var date = a.getDate().toString().length == 1 ? '0'+a.getDate() : a.getDate();
+            var yesterday = a.getFullYear()+'-'+month+'-'+date;
+            $(id).attr('href','/day/'+yesterday);
+            $(id).attr('tabindex',-1);
+            $(id).html("For "+yesterday);
+        }
+        date_calculator("#yester",1);
+        date_calculator("#yester2",2);
+
+
+
+
+</script>
+{% endcompress %}
+
+<style type="text/css">
+    .dash{
+        margin: 20px;
+    }
+
+    .loading_chart {
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    background: rgba( 255, 255, 255, .8 )
+                url('{{STATIC_URL}}img/loading.gif')
+                50% 50%
+                no-repeat;
+}
+</style>
+
+{% endifusergroup %}
+{% endblock %}

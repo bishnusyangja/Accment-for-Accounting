@@ -1,0 +1,100 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Journal Voucher{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_journal_vouchers" %}">Journal Register</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ scenario }} Journal Voucher</li>
+{% endblock %}
+
+{% block extra-head %}
+        {% load compress %}
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+        {% compress js %}
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    <script src="{{ STATIC_URL }}js/journal_voucher.js"></script>
+        {% endcompress %}
+    <script>
+        {% load filters %}
+        ko_data = {{ data|jsonify }};
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+
+        <div data-bind="with: journal_voucher">
+            <div>
+                <h2 data-bind="css: state()">{{ "Journal Voucher" }}</h2>
+                <span data-bind="text: message()"></span>
+            </div>
+
+            Voucher No.:
+        <div class="input-append input-prepend input-mini dissolve">
+            <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.journal_voucher_prefix }}</span>
+            <input type="text" name="voucher_no" data-bind="value: $root.voucher_no" disabled/>
+            <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.journal_voucher_suffix }}</span>
+        </div>
+
+            <div class="pull-right">
+                Date:
+                <input type="text" name="date" data-bind="value: $root.date"
+                        disabled/>
+            </div>
+
+            <table class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th>Dr/Cr</th>
+                    <th>Particular</th>
+                    <th>Description</th>
+                    <th>Dr Amount</th>
+                    <th>Cr Amount</th>
+                </tr>
+                </thead>
+
+                <tbody id="journal-voucher">
+                <!-- ko foreach: rows -->
+                <tr data-bind="flash: true" >
+                    <td data-bind="text: {values: ['Dr', 'Cr']}, text: type" ></td>
+                    <td class="with_ip">
+                        <input type="hidden"  data-to="accounts"
+                               data-bind="value: account, select2: $root.accounts_except_category(['Sales', 'Purchase'], true)" disabled>
+                    </td>
+                    <td data-bind="text: description"><input type="text"></td>
+                    <td data-bind="text: dr_amount, numeric: true"></td>
+                    <td data-bind="text: cr_amount, numeric: true"></td>
+
+                </tr>
+                <!-- /ko -->
+                <tr data-bind="css: total_row_class()">
+                    <td colspan="3"><b>TOTAL</b></td>
+                    <td data-bind="text: dr_total()"></td>
+                    <td data-bind="text: cr_total()"></td>
+
+                </tr>
+                </tbody>
+            </table>
+
+            <br/><br/>
+            <a href="{{MEDIA_URL}}{{data.attachment}}">Attachment</a></br>
+            Narration: <textarea name="voucher_no" data-bind="value: $root.narration" disabled></textarea>
+            <br/>
+
+            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+            <button class="btn btn-primary" onclick=open_page()>Unapprove</button>
+            <script type="text/javascript">
+                function open_page(){
+                window.location = "/voucher/journal/unapprove/{{data.id}}";
+                return;
+                }
+            </script>
+            {% endifusergroup %}
+
+
+
+{% endblock %}

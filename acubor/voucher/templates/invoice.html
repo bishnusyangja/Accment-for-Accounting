@@ -1,0 +1,197 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Invoice{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li xmlns="https://www.w3.org/1999/html"><a href="{% url "all_invoices" %}">Invoices</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>{{ scenario }} Invoice</li>
+{% endblock %}
+
+{% block extra-head %}
+{% load compress %}
+
+
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/invoice.js"></script>
+{% endcompress %}
+<script>
+        {% load filters %}
+        ko_data = {{ data|jsonify }};
+
+</script>
+{% endblock %}
+
+{% block pageheader %}{{ "Invoice" }}{% endblock %}
+
+{% block content %}
+
+<form method="post" action="#">
+    {% csrf_token %}
+
+    <div class="row-fluid">
+        <div class="span4">
+            {{ form.voucher_no.label_tag }}
+            <div class="input-append input-prepend input-mini">
+                    <span class="add-on">{{ data.read_only.invoice_prefix }}{{ '-' }}</span>
+                {{ form.voucher_no }}
+                    <span class="add-on">{{ '-' }}{{ data.read_only.invoice_suffix }}</span>
+            </div>
+        </div>
+
+        <div class="span4">
+            {{ form.party.label_tag }}
+            <input type="hidden" data-name="Customer"
+                   data-url="{% url 'create_customer' %}" data-to="parties"
+                   data-bind="value: party, select2: parties, event: {change: $root.customer_changed}">
+            <span class="print-only" data-bind="text: party_address()"></span>
+        </div>
+
+        <div class="span4">
+            {{ form.date.label_tag }}
+            <input data-date-format="mm/dd/yyyy" data-bind="value: date" id="inv-date" name="date"
+                   required="required" type="text">
+        </div>
+    </div>
+    <br/>
+
+    <div class="row-fluid">
+
+        <div class="span4">
+            {{ form.reference.label_tag }}
+            {{ form.reference }}
+        </div>
+
+        <div class="span4">
+            Price is:
+            <br/>
+            <select data-bind="options: tax_options, optionsText: 'name', optionsValue: 'id', value: tax"></select>
+        </div>
+
+        <div class="span4">
+            {{ form.due_date.label_tag }}
+            <input data-date-format="mm/dd/yyyy" data-bind="value: due_date" id="due-date" name="due_date"
+                   type="text">
+            {{ form.due_date.errors }}
+        </div>
+
+    </div>
+    <br/>
+
+    <div data-bind="text: message(), css: state()" id="message"></div>
+
+    <div class="row-fluid" data-bind="with: particulars">
+
+        <table class="table table-bordered table-striped table-acubor table-sortable" id="voucher_table">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span4">Particulars</th>
+                <th class="span4">Description</th>
+                <th class="span4">Price</th>
+                <th class="span2">Quantity</th>
+                <th class="span1">Discount %</th>
+                <th class="span2">Tax Scheme</th>
+                <th class="span2">Amount</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+
+            <tbody id="particulars-body">
+            <!-- ko foreach:rows -->
+            <tr>
+                <td class="with_ip">
+                    <div class="drag_handle">
+                        <i class="icon-ellipsis-vertical"></i>
+                    </div>
+                    <span class="wid-pad pull-left" data-bind="text: $index()+1"> </span>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_sales' %}" data-to="sales_accounts"
+                           data-bind="value: account, select2: $root.sales_accounts">
+                </td>
+                <td>
+                    <input target="inside_td" data-bind="value: description"/>
+                </td>
+                <td>
+                    <input target="inside_td" data-bind="eval: unit_price, value: unit_price"/>
+                </td>
+                <td>
+                    <input target="inside_td" data-bind="eval: quantity, value: quantity"/>
+                </td>
+                <td>
+                     <input target="inside_td" data-bind="eval: discount, value: discount"/>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_tax_scheme' %}" data-name="Tax Scheme"
+                           data-bind="value: tax_scheme, select2: $root.tax_schemes">
+                </td>
+                <td style="text-align:right;" data-bind="text: znum(fnum(rnum(amount())))">
+                </td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+
+            <tr class="dont-validate">
+                <td colspan="6"><b class="pull-right">SUB-TOTAL</b></td>
+                <td colspan="2" style="text-align:right;" data-bind="text: znum(fnum(rnum($parent.sub_total())))"></td>
+                <td/>
+            </tr>
+            <tr class="dont-validate">
+                <td colspan="6"><b class="pull-right">TAX AMOUNT</b></td>
+                <td colspan="2" style="text-align:right;" data-bind="text: znum(fnum(rnum($parent.tax_amount())))"></td>
+                <td/>
+            </tr>
+            <tr class="dont-validate">
+                <td colspan="6"><b class="pull-right">GRAND TOTAL</b></td>
+                <td colspan="2" style="text-align:right;" data-bind="text: znum(fnum(rnum($parent.grand_total())))"></td>
+                <td/>
+            </tr>
+            </tbody>
+        </table>
+        <button class="btn" data-bind="click: addRow">
+            <i class="icon-plus-sign"></i> Add New Row
+        </button>
+        <br><br>
+
+        <div>
+            Description: <textarea data-bind="value: $root.description"></textarea>
+        </div>
+
+        {% if scenario == 'Update' %}
+        <a class="btn btn-danger" href="{% url 'delete_invoice' form.instance.id %}">Delete</a>
+        {% endif %}
+        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+        <input class="btn" type="submit" value="Approve"
+               data-bind="click: $root.approve, visible: $root.id() && $root.status() == 'Unapproved'">
+        {% endifusergroup %}
+        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+        <input id="unapprove" class="btn" type="submit" value="Unapprove"
+               data-bind="click: $root.unapprove, visible: $root.id() && $root.status() == 'Approved'">
+        {% endifusergroup %}
+        <input class="btn" type="submit" value="Cancel"
+               data-bind="click: $root.cancel, visible: $root.status() != 'Cancelled'">
+        <input class="btn" type="submit" value="Save" data-bind="click: $root.save">
+        <input class="btn" type="submit" value="Save & Continue" data-bind="click: $root.save"
+               data-continue="true">
+
+    </div>
+</form>
+
+{% if approved %}
+    <script>
+        $(':button').attr('disabled', true);
+        $(':input').attr({'disabled':true});
+        $('.btn-danger').hide();
+        $('#unapprove').attr('disabled', false)
+    </script>
+{% endif %}
+
+{% endblock %}

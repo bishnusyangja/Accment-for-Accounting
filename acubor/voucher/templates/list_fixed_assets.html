@@ -1,0 +1,63 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Fixed Assets Register{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_fixed_assets" %}">Fixed Assets Register</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Fixed Assets Register
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load filters %}
+
+{% autosort objects as sorted_objects %}
+{% autopaginate sorted_objects 25 as paginated_objects %}
+
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>{% anchor date 'Date' %}</th>
+    <th>{% anchor voucher_no 'Voucher No.' %}</th>
+    <th>{% anchor from-account 'From' %}</th>
+    <th>{% anchor reference 'Reference No.' %}</th>
+    <th>Ledgers</th>
+    <th>Description</th>
+    </thead>
+    <tbody>
+    {% for item in paginated_objects %}
+    <tr>
+        <td><a href="{% url 'update_fixed_asset' item.id %}">{{ item.date|date:"m/d/Y" }}</a></td>
+        <td>{{ item.voucher_no }}</td>
+        <td>
+            {{ item.from_account|linkify }}
+        </td>
+        <td>
+            {{ item.reference }}
+        </td>
+        <td>
+            {% for row in item.rows.all %}{% if not forloop.first %}
+            ,
+            {% endif %}
+            <a href="{{ row.asset_ledger.get_absolute_url}}">{{ row.asset_ledger }}</a>
+            {% endfor %}
+        </td>
+        <td>
+            {{ item.description }}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% paginate %}
+
+<a class="btn" href="{% url 'create_fixed_asset' %}">New Fixed Asset</a>
+
+
+{% endblock %}

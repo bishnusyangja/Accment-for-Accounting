@@ -1,0 +1,59 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Day Journal Register{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "all_day_journals_improvised" %}">Day Journal Register</a></li>
+{% endblock %}
+
+
+{% block extra-head %}
+{% load compress %}
+{% compress js %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
+{% endcompress %}
+{% endblock %}
+
+{% block pageheader %}
+Day Journal Register
+{% endblock %}
+
+{% block content %}
+{% load filters %}
+
+
+<input type="text" id="day-journal-date" class="date-picker" data-date-format="yyyy-mm-dd"
+       placeholder="Pick a date..."/>
+<button id="day-journal-selection-button" class="btn btn-mini">Go</button>
+<script type="text/javascript">
+            $('.date-picker').datepicker({
+                endDate:'0d'
+            });
+
+</script>
+
+
+{% load pagination_tags %}
+{% autopaginate objects 303 as paginated_objects %}
+
+<ul>
+    {% for journal in paginated_objects %}
+    <li>
+        <a href="/day/{{ journal.date|date:" Y-m-d" }}">{{ journal.date }}</a>
+        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+
+        <!--<button class="btn-none" onclick=>-->
+        <!--<i class="icon-trash"></i>-->
+        <!--</button>-->
+        <!--&lt;!&ndash;<button onclick="">Delete!!</button>&ndash;&gt;-->
+        <a style="color:red" href="/day/delete/{{ journal.date|date:" Y-m-d"}}">Delete</a>
+        {% endifusergroup %}
+    </li>
+    {% endfor %}
+</ul>
+
+{% paginate %}
+
+
+{% endblock %}

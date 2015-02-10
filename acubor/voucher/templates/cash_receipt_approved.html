@@ -1,0 +1,96 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Cash Receipt{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "create_cash_receipt" %}">Cash Receipt</a></li>
+{% endblock %}
+{% load filters %}
+{% block extra-head %}
+        {% load compress %}
+
+
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+    {% compress js %}
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    <script src="{{ STATIC_URL }}js/cash_receipt_approved.js"></script>
+        {% endcompress %}
+    <script>
+        ko_data =
+        {{ data|jsonify }}
+    </script>
+{% endblock %}
+
+{% block pageheader %}
+    {{ "Cash Receipt" }}
+{% endblock %}
+
+{% block content %}
+
+
+        <span data-bind="text: message(), css: state()"></span>
+
+        {{ form.voucher_no.label_tag }}
+        <div class="input-append input-prepend input-mini dissolve">
+                    <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.cash_receipt_prefix }}</span>
+                    {{ form.voucher_no }}
+                    <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.cash_receipt_suffix }}</span>
+                </div>
+        {{ form.voucher_no.errors }}
+
+        <div class="row-fluid">
+
+            <div class="span6">
+                Receipt From:<br/>
+                <input type="hidden" data-name="Customer"
+                       data-bind="value: party, select2: $root.parties" disabled>
+            </div>
+
+            <div class="span6">
+                Receipt On:<br/>
+                <input type="text" data-bind="value: receipt_on" disabled>
+            </div>
+
+        </div>
+
+        <div class="row-fluid">
+
+            <div class="span6">
+                Customer Address:
+                <br/>
+                <input type="text" data-bind="value: party_address" disabled>
+            </div>
+
+            <div class="span6">
+                Reference:<br/>
+                <input type="text" data-bind="value: reference" disabled>
+            </div>
+
+        </div>
+
+        <div class="row-fluid">
+
+            <div class="span6">
+                Current Balance:
+                <br/>
+                <input type="text" data-bind="value: current_balance" disabled>
+            </div>
+
+            <div class="span6">
+                Amount:
+                <br/>
+                <input type="text" data-bind="value: amount" disabled>
+            </div>
+            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+        <button class="btn btn-primary" onclick=open_page()>Unapprove</button>
+        <script type="text/javascript">
+            function open_page(){
+            window.location = "/voucher/cash-receipt/unapprove/{{data.id}}";
+            return;
+            }
+        </script>
+        {% endifusergroup %}
+        </div>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Inventory Items{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_all_items" %}">Stock Items</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Stock Items
+{% endblock %}
+
+{% block content %}
+
+    {% load pagination_tags %}
+    {% load sorting_tags %}
+    {% autosort objects.qs as sorted_objects %}
+    {% autopaginate sorted_objects 25 as paginated_objects %}
+
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th>{% anchor name 'Name' %}</th>
+        <th>{% anchor category 'Category' %}</th>
+        <th>Stock Books</th>
+        </thead>
+        <tbody>
+        {% for item in paginated_objects %}
+            <tr>
+                <td><a href="{% url 'update_inventory_item' item.id %}">{{ item.name }}</a></td>
+                <td>{{ item.category }}</td>
+                <td>
+                    <a href="{% url 'view_stock_ledger' item.account.id %}">View Stock Book</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% paginate %}
+
+    <a class="btn" href="{% url 'create_inventory_item' %}">New Inventory Item</a>
+
+{% endblock %}

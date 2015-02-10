@@ -1,0 +1,28 @@
+{% extends 'blog.html' %}
+
+{% block title %}
+{{ scenario }} Blog Entry
+{% endblock %}
+
+{% block extra-head %}
+<script src="{{ STATIC_URL }}redactor/redactor.min.js"></script>
+<link href="{{ STATIC_URL }}redactor/css/redactor.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}redactor/jquery-migrate.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ scenario }} Blog Entry</h1>
+<br>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <br>
+    <button type="submit" class="btn">Save</button>
+    {% if scenario == 'Update' %}
+    <a class="btn btn-danger" href="{% url 'delete_blog_entry' form.instance.id %}">Delete</a>
+    {% endif %}
+    <a href="/blog">Go Back</a>
+</form>
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "dashboard.html" %}
+
+{% block title %}All Parties{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_all_parties" %}">Parties</a></li>
+{% endblock %}
+
+{% block pageheader %}
+All Parties
+{% endblock %}
+
+{% block content %}
+
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>Name</th>
+    <th>Address</th>
+    <th>Phone</th>
+    <th>Email</th>
+    <th>Debtor Level</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    {% for object in objects %}
+    <tr>
+        <td>
+            {{ object.name }}
+        </td>
+        <td>
+            {{ object.address }}
+        </td>
+        <td>
+            {{ object.phone }}
+        </td>
+        <td>
+            {{ object.email }}
+        </td>
+        <td>
+            {{ object.debtor_level }}
+        </td>
+        <td>
+            <a href="{% url "update_party" object.id %}">
+            Edit
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a class="btn" href="{% url 'create_party' %}">Create New Party</a>
+
+{% endblock %}

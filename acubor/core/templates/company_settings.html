@@ -1,0 +1,60 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Company Settings{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "company_settings" %}">Company Settings</a></li>
+{% endblock %}
+
+
+{% block pageheader %}
+Company Settings
+{% endblock %}
+
+
+{% block content %}
+
+<form method="post" action="">
+    {% csrf_token %}
+    <div class="span6">
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Basic Settings
+            </h3>
+        </div>
+        <div class="panel-body">
+            <span><h5>No. of Decimal Places to be considered:</h5></span>
+            {{ form.decimal_places.errors }}
+            {{ form.decimal_places }}
+            <span><h5>Number comma system to be used:</h5></span>
+            {{ form.number_comma_system.errors }}
+            {{ form.number_comma_system }}
+            <span><h5>Region where the store is located:</h5></span>
+            {{ form.region_setting.errors }}
+            {{ form.region_setting }}
+            <span><h5>Account coding option:</h5></span>
+            {{ form.account_coding.errors }}
+            {{ form.account_coding }}
+            {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+            <span><h5>Lotto Tracking:</h5></span>
+            {{ form.lotto_tracking.errors }}
+            {{ form.lotto_tracking }}
+            <span><h5>Inventory tracking:</h5></span>
+            {{ form.inventory_tracking.errors }}
+            {{ form.inventory_tracking }}
+            {% endif %}
+        </div>
+    </div>
+    <input type="submit" value="Submit" class="btn"/>
+    </div>
+</form>
+{% if msg %}
+<script>
+    bs_alert.success("{{msg}}");
+    //humane.log("{{msg}}", { timeout: 3000, baseCls: 'humane-libnotify' });
+</script>
+{% endif %}
+
+{% endblock %}

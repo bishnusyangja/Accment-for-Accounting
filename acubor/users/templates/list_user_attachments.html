@@ -1,0 +1,387 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Attachment Register{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="#">Attachment</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Attachment Register
+{% endblock %}
+
+
+{% block extra-head %}
+    {% load compress %}
+
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+        {% compress js %}
+
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    <script src="{{ STATIC_URL }}js/user_attachment.js"></script>
+    {% endcompress %}
+    {% load filters %}
+    {% load voucher_filter %}
+{% endblock %}
+
+{% block controls %}
+    <!-- Button to trigger modal -->
+
+{% endblock %}
+
+{% block content %}
+
+
+<div class="tabbable" id="attachment_tabbable" data-journal-day="{{ day_journal.date|date:"Y-m-d" }}">
+        <ul class="nav nav-tabs" id="attachment-tab">
+            <li class="active">
+                <a data-toggle="tab" id="sales_attach-tab" href="#sales_attach">Sales Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" id="purchase_attach-tab" href="#purchase_attach">Purchase Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" id="bank_attach-tab" href="#bank_attach">Bank Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" id="other_attach-tab" href="#other_attach">Other Attachments</a>
+            </li>
+        </ul>
+        <div class="tab-content" style="margin-top:10px;">
+            <div id="sales_attach" class="tab-pane active">
+                <table class="table table-bordered table-striped table-acubor">
+                    <thead>
+                        <th>Date</th>
+                        <th>Attachment</th>
+                        <th>Description</th>
+                        <th>Process Status</th>
+                        <th>Change Process</th>
+                        <th>Processed Date</th>
+                        <th>Approve Status</th>
+                        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                        <th>Change Approve</th>
+                        {% endifusergroup %}
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                    {% for attachment in sales_attachments %}
+                        <tr>
+                            <td>{{attachment.uploaded_date|date:'m/d/Y'}}</td>
+                            <td><a href="{{MEDIA_URL}}{{attachment.attachment}}" >{{attachment.attachment|filename}}</a></td>
+                            <td>{{attachment.description}}</td>
+                            <td>{% if attachment.is_processed %}
+                                    <b>Processed</b>
+                                {% else %}
+                                    <b>Unprocessed</b>
+                                {% endif %}
+                            </td>
+                            <td><button id="sales-process{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            <td>{{attachment.processed_date|date:'m/d/Y'}}</td>
+                            <td>{% if attachment.is_approved %}
+                                    <b><font color="green">Approved</font></b>
+                                {% else %}
+                                    <b><font color="red">Unapproved</font></b>
+                                {% endif %}
+                            </td>
+                            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                            <td><button id="sales-approve{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            {% endifusergroup %}
+                            <td><button id="sales-delete{{attachment.id}}" class=" btn-none"><i class="icon-trash"></i></button></td>
+                        </tr>
+
+                        <script type="text/javascript">
+                            $('#sales-process'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                sales_process('process', id);
+                            });
+
+                            $('#sales-approve'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                sales_process('approve', id);
+                            });
+
+                            $('#sales-delete'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                sales_process('delete', id);
+                            });
+
+
+                            function sales_process(process, id){
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/user/attachment/process/',
+                                    dataType: "html",
+                                    async: false,
+                                    data: {'id':id, 'type':'sales', 'process': process},
+                                    success: function(msg){
+                                        if(msg.error_message){
+                                            console.log(error_message);
+                                        }else{
+                                            window.location.reload();
+                                        }
+
+                                    }
+
+                                });
+                            }
+                        </script>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="purchase_attach" class="tab-pane">
+               <table class="table table-bordered table-acubor table-striped">
+                    <thead>
+                        <th>Date</th>
+                        <th>Attachment</th>
+                        <th>Description</th>
+                        <th>Process Status</th>
+                        <th>Change Process</th>
+                        <th>Processed Date</th>
+                        <th>Approve Status</th>
+                        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                        <th>Change Approve</th>
+                        {% endifusergroup %}
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                    {% for attachment in purchase_attachments %}
+                        <tr>
+                            <td>{{attachment.uploaded_date|date:'m/d/Y'}}</td>
+                            <td><a href="{{MEDIA_URL}}{{attachment.attachment}}" >{{attachment.attachment|filename}}</a></td>
+                            <td>{{attachment.description}}</td>
+                            <td>{% if attachment.is_processed %}
+                                    <b>Processed</b>
+                                {% else %}
+                                    <b>Unprocessed</b>
+                                {% endif %}
+                            </td>
+                            <td><button id="purchase-process{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            <td>{{attachment.processed_date|date:'m/d/Y'}}</td>
+                            <td>{% if attachment.is_approved %}
+                                    <b><font color="green">Approved</font></b>
+                                {% else %}
+                                    <b><font color="red">Unapproved</font></b>
+                                {% endif %}
+                            </td>
+                            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                            <td><button id="purchase-approve{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            {% endifusergroup %}
+                            <td><button id="purchase-delete{{attachment.id}}" class=" btn-none"><i class="icon-trash"></i></button></td>
+                        </tr>
+
+                        <script type="text/javascript">
+                            $('#purchase-process'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                purchase_process('process', id);
+                            });
+
+                            $('#purchase-approve'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                purchase_process('approve', id);
+                            });
+
+                            $('#purchase-delete'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                purchase_process('delete', id);
+                            });
+
+
+                            function purchase_process(process, id){
+
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/user/attachment/process/',
+                                    dataType: "html",
+                                    async: false,
+                                    data: {'id':id, 'type':'purchase', 'process': process},
+                                    success: function(msg){
+                                        if(msg.error_message){
+                                            console.log(error_message);
+                                        }else{
+                                            window.location.reload();
+                                        }
+
+                                    }
+
+                                });
+                                console.log(id);
+                            }
+                        </script>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="bank_attach" class="tab-pane">
+                <table class="table table-bordered table-acubor table-striped">
+                    <thead>
+                        <th>Date</th>
+                        <th>Attachment</th>
+                        <th>Description</th>
+                        <th>Process Status</th>
+                        <th>Change Process</th>
+                        <th>Processed Date</th>
+                        <th>Approve Status</th>
+                        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                        <th>Change Approve</th>
+                        {% endifusergroup %}
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                    {% for attachment in bank_attachments %}
+                        <tr>
+                            <td>{{attachment.uploaded_date|date:'m/d/Y'}}</td>
+                            <td><a href="{{MEDIA_URL}}{{attachment.attachment}}" >{{attachment.attachment|filename}}</a></td>
+                            <td>{{attachment.description}}</td>
+                            <td>{% if attachment.is_processed %}
+                                    <b>Processed</b>
+                                {% else %}
+                                    <b>Unprocessed</b>
+                                {% endif %}
+                            </td>
+                            <td><button id="bank-process{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            <td>{{attachment.processed_date|date:'m/d/Y'}}</td>
+                            <td>{% if attachment.is_approved %}
+                                    <b><font color="green">Approved</font></b>
+                                {% else %}
+                                    <b><font color="red">Unapproved</font></b>
+                                {% endif %}
+                            </td>
+                            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                            <td><button id="bank-approve{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            {% endifusergroup %}
+                            <td><button id="bank-delete{{attachment.id}}" class=" btn-none"><i class="icon-trash"></i></button></td>
+                        </tr>
+
+                        <script type="text/javascript">
+                            $('#bank-process'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                bank_process('process', id);
+                            });
+
+                            $('#bank-approve'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                bank_process('approve', id);
+                            });
+
+                            $('#bank-delete'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                bank_process('delete', id);
+                            });
+
+
+                            function bank_process(process, id){
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/user/attachment/process/',
+                                    dataType: "html",
+                                    async: false,
+                                    data: {'id':id, 'type':'bank', 'process': process},
+                                    success: function(msg){
+                                        if(msg.error_message){
+                                            console.log(error_message);
+                                        }else{
+                                           window.location.reload();
+
+                                        }
+                                    },
+
+
+                                });
+
+
+                            }
+                        </script>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="other_attach" class="tab-pane">
+                <table class="table table-bordered table-acubor table-striped">
+                    <thead>
+                        <th>Date</th>
+                        <th>Attachment</th>
+                        <th>Description</th>
+                        <th>Process Status</th>
+                        <th>Change Process</th>
+                        <th>Processed Date</th>
+                        <th>Approve Status</th>
+                        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                        <th>Change Approve</th>
+                        {% endifusergroup %}
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                    {% for attachment in other_attachments %}
+                        <tr>
+                            <td>{{attachment.uploaded_date|date:'m/d/Y'}}</td>
+                            <td><a href="{{MEDIA_URL}}{{attachment.attachment}}" >{{attachment.attachment|filename}}</a></td>
+                            <td>{{attachment.description}}</td>
+                            <td>{% if attachment.is_processed %}
+                                    <b>Processed</b>
+                                {% else %}
+                                    <b>Unprocessed</b>
+                                {% endif %}
+                            </td>
+                            <td><button id="other-process{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            <td>{{attachment.processed_date|date:'m/d/Y'}}</td>
+                            <td>{% if attachment.is_approved %}
+                                    <b><font color="green">Approved</font></b>
+                                {% else %}
+                                    <b><font color="red">Unapproved</font></b>
+                                {% endif %}
+                            </td>
+                            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                            <td><button id="other-approve{{attachment.id}}" class="btn btn-info btn-small">Change</button></td>
+                            {% endifusergroup %}
+                            <td><button id="other-delete{{attachment.id}}" class=" btn-none"><i class="icon-trash"></i></button></td>
+                        </tr>
+
+                        <script type="text/javascript">
+                            $('#other-process'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                other_process('process', id);
+                            });
+
+                            $('#other-approve'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                other_process('approve', id);
+                            });
+
+                            $('#other-delete'+"{{attachment.id}}").click(function(){
+                                var id = "{{attachment.id}}";
+                                other_process('delete', id);
+                            });
+
+
+                            function other_process(process, id){
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/user/attachment/process/',
+                                    dataType: "html",
+                                    async: false,
+                                    data: {'id':id, 'type':'other', 'process': process},
+                                    success: function(msg){
+                                        if(msg.error_message){
+                                            console.log(error_message);
+                                        }else{
+                                            window.location.reload();
+                                        }
+
+                                    }
+
+                                });
+                            }
+                        </script>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

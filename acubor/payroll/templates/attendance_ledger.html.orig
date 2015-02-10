@@ -1,0 +1,199 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Attendance Voucher{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="#">Attendance Register</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li><a href="#">Attendance Voucher</a></li>
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/up_down.js"></script>
+<script src="{{ STATIC_URL }}js/attendance_ledger.js"></script>
+{% endcompress %}
+
+        <style type="text/css">
+            td select {
+                border:none;
+            }
+        </style>
+<!--<script>-->
+        <!--ko_data =-->
+        <!--{{ data|jsonify }}-->
+
+<!--</script>-->
+{% endblock %}
+
+{% block content-pageheader %}
+{{ scenario }} Attendance Voucher
+{% endblock %}
+
+{% block content %}
+
+<form>
+<div class="row-fluid">
+    <div class="pull-left">
+<<<<<<< HEAD
+        Select an Employee
+        <input id="input1" style="width:300px;" data-url="{% url 'create_employee' %}" data-to="employees" data-name="Employee" class="change-occurrence"
+=======
+        Employee
+        <input id="input1" style="width:300px;" data-url="{% url 'create_employee' %}" data-to="employees" data-placeholder="Select an Employee" data-name="Employee" class="change-occurrence"
+>>>>>>> df989abb369491daec04139187d976f697afdd32
+               data-bind="value:employee, select2: employees, event: {change: $root.if_changed}" />
+    </div>
+    <div class="pull-right">
+        Attendance Type
+        <select id="sele" style="width:300px" class="selection" data-bind="value: attendance_type, event: {change: $root.up_down}" >
+            <option></option>
+            <option value="hour_attendance">Hour Attendance</option>
+            <option value="day_attendance">Day Attendance</option>
+        </select>
+    </div>
+
+</div>
+
+
+<div class="tabbable" style="margin-top:10px">
+    <ul class="nav nav-tabs">
+        <li><a class="month-tab" id="january-tab" href="#0" data-toggle="tab">January</a></li>
+        <li><a class="month-tab" id="february-tab" href="#1" data-toggle="tab">February</a></li>
+        <li><a class="month-tab" id="march-tab" href="#2" data-toggle="tab">March</a></li>
+        <li><a class="month-tab" id="april-tab" href="#3" data-toggle="tab">April</a></li>
+        <li><a class="month-tab" id="may-tab" href="#4" data-toggle="tab">May</a></li>
+        <li><a class="month-tab" id="june-tab" href="#5" data-toggle="tab">June</a></li>
+        <li><a class="month-tab" id="july-tab" href="#6" data-toggle="tab">July</a></li>
+        <li><a class="month-tab" id="august-tab" href="#7" data-toggle="tab">August</a></li>
+        <li><a class="month-tab" id="september-tab" href="#8" data-toggle="tab">September</a></li>
+        <li><a class="month-tab" id="october-tab" href="#9" data-toggle="tab">October</a></li>
+        <li><a class="month-tab" id="november-tab" href="#10" data-toggle="tab">November</a></li>
+        <li><a class="month-tab" id="december-tab" href="#11" data-toggle="tab">December</a></li>
+    </ul>
+    <div class="tab-content">
+
+        <!-- ko if: hour_attendance_status -->
+        <!-- ko if: employee -->
+
+        <div class="hour-attendance-div">
+            <table id="hour-attendance-table" class="table table-bordered table-striped table-acubor ">
+                <thead>
+                    <th>Date</th>
+                    <th>In Time</th>
+                    <th>Out Time</th>
+                    <th>In Time</th>
+                    <th>Out Time</th>
+                    <th>Working Time</th>
+                    <th>Delete</th>
+                </thead>
+
+
+                <tbody>
+                <!-- ko foreach: hour_attendance -->
+                    <tr>
+                        <td ><input target="inside_td" data-bind="value:date" disabled/></td>
+                        <td><input class="time-input" target="inside_td" data-bind="value:in_time1, timeValidator:in_time1"/></td>
+                        <td><input class="time-input" target="inside_td" data-bind="value:out_time1, timeValidator:out_time1"/></td>
+                        <td><input class="time-input" target="inside_td" data-bind="value:in_time2, timeValidator:in_time2"/></td>
+                        <td><input class="time-input" target="inside_td" data-bind="value:out_time2, timeValidator:out_time2"/></td>
+                        <td><input class="time-input" target="inside_td" data-bind="value:working_time" disabled/></td>
+                        <td>
+                            <button class="btn-none delete-hour-attendance " data-bind="click: delete_hour" ><i
+                                    class="icon-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                <!-- /ko -->
+                    <tr>
+                        <td colspan="5">Total Work Time</td>
+                        <td><input target="inside_td" data-bind="value:total_time" disabled/></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        {% ifusergroup 'Supervisor' 'Owner' 'SuperOwner' %}
+            <input class="btn" type="submit" value="Save" data-bind="click: $root.save">
+            <input class="btn" type="submit" value="Save and Continue" data-bind="click: $root.save">
+        {% else %}
+            <script>
+                $(':input').attr('disabled', true);
+                $('#input1').attr('disabled', false);
+                $('#sele').attr('disabled', false);
+            </script>
+        {% endifusergroup %}
+        <!-- /ko -->
+        <!-- /ko -->
+
+        <!-- ko if: day_attendance_status -->
+        <!-- ko if: employee -->
+
+        <div class="day-attendance-div">
+            <table class="table table-bordered table-striped table-acubor">
+                <thead>
+                    <th>Date</th>
+                    <th>Attendance Status</th>
+                    <th>Delete</th>
+                </thead>
+                <tbody>
+                    <!-- ko foreach: day_attendance -->
+                    <tr>
+                        <td ><input target="inside_td" data-bind="value:date" disabled/></td>
+                        <td >
+                            <select class="sel" style="width:100%" data-bind="value:attendance_status">
+                                <option></option>
+                                <option>Full Attendance</option>
+                                <option>Late Attendance</option>
+                                <option>Half Attendance</option>
+                                <option>Early Leave</option>
+                                <option>Absent</option>
+                            </select>
+
+                        </td>
+                        <td>
+                            <button class="btn-none delete-day-attendance " data-bind="click: delete_day"><i
+                                    class="icon-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                </tbody>
+            </table>
+
+        </div>
+
+        {% ifusergroup 'Supervisor' 'Owner' 'SuperOwner' %}
+        <input class="btn" type="submit" value="Save" data-bind="click: $root.save">
+        <input class="btn" type="submit" value="Save and Continue" data-bind="click: $root.save">
+        {% else %}
+            <script>
+                $(':input').attr('disabled', true);
+                $('#input1').attr('disabled', false);
+                $('#sele').attr('disabled', false);
+            </script>
+        {% endifusergroup %}
+        <!-- /ko -->
+        <!-- /ko -->
+
+    </div>     <!-- /.tab-content -->
+</div>       <!-- /.tabbable -->
+
+
+</form>
+
+{% if disabled %}
+<script>
+    $(':input').attr('disabled', 'true');
+    bs_alert.warning('<h4>In order to activate attendance register you need to fill the attendance parameter <a href="/payroll/attendance-parameter">Here</a></h4>');
+</script>
+{% endif %}
+
+{% endblock %}

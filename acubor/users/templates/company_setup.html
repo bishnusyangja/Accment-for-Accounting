@@ -1,0 +1,93 @@
+{% extends "dashboard.html" %}
+
+{% block title %} Company Setup{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<!--suppress XmlDuplicatedId -->
+<li><a href="#">Company Setup</a></li>
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+
+{% endblock %}
+
+{% block broadcast_messages %}
+{% endblock %}
+
+{% block content-pageheader %}
+Company Setup
+{% endblock %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    <div class="row-fluid">
+        <div class="span6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Basic Details
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <span><h5>Official Name</h5></span>
+                    {{ form.name.errors }}
+                    {{ form.name }}
+                    <span><h5>Address</h5></span>
+                    {{ form.street_address_1.errors }}
+                    {{ form.street_address_1 }}
+                    {{ form.street_address_2.errors }}
+                    {{ form.street_address_2 }}
+                    {{ form.city.errors }}
+                    {{ form.city }}
+                    {{ form.state.errors }}
+                    {{ form.state }}
+                    {{ form.zip_code.errors }}
+                    {{ form.zip_code }}
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Additional Details
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <span><h5>Type of Business:</h5></span>
+                    {{ form.type_of_business }}
+                    {{ form.type_of_business.errors }}
+                    <br/>
+                    <span><h5>Financial Year Starts on:</h5></span>
+                    {{ form.financial_year_start_date }}
+                    {{ form.financial_year_start_date.errors }}
+                    <br/>
+                    <span><h5>Current Year Books started on:</h5></span>
+                    {{ form.books_start_date }}
+                    {{ form.books_start_date.errors }}
+                    <br/>
+                    <span><h5>Books are closed on:</h5></span>
+                    {{ form.books_closing_date }}
+                    {{ form.books_closing_date.errors }}
+                    <br/>
+                </div>
+            </div>
+            <input type="submit" value="Create Company ..." class="btn btn-lg btn-info btn-block">
+        </div>
+    </div>
+</form>
+<script>
+    $('.date-picker').datepicker({
+    format: 'mm/dd',
+    endDate: '0d'
+    });
+    $('.date-picker-full').datepicker({
+    format: 'mm/dd/yyyy',
+    endDate: '0d'
+    });
+</script>
+{% endblock %}

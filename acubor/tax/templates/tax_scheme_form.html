@@ -1,0 +1,30 @@
+{% extends base_template %}
+
+{% block title %}{{ scenario }} Tax Scheme {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_tax_schemes" %}">Tax Schemes</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>{{ scenario }} Tax Scheme</li>
+{% endblock %}
+
+{% block pageheader %}
+{{ scenario }} Tax Scheme
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="row">
+        <div class="span12">
+            <input type="submit" value="Submit" class="btn"/>
+            {% if scenario == 'Update' %}
+            <a class="btn btn-danger" href="{% url 'delete_tax_scheme' form.instance.id %}">Delete!</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}

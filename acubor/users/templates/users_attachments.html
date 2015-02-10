@@ -1,0 +1,138 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Attachments{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="#">Attachment</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Attachment
+{% endblock %}
+
+
+{% block extra-head %}
+    {% load compress %}
+
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+        {% compress js %}
+
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    <script src="{{ STATIC_URL }}js/user_attachment.js"></script>
+    {% endcompress %}
+    {% load filters %}
+{% endblock %}
+
+{% block controls %}
+    <!-- Button to trigger modal -->
+    asdas
+{% endblock %}
+
+{% block content %}
+<div class="tabbable" id="attachment_tabbable" data-journal-day="{{ day_journal.date|date:"Y-m-d" }}">
+        <ul class="nav nav-tabs" id="attachment-tab">
+            <li class="active">
+                <a data-toggle="tab" href="#sales_attach">Sales Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#purchase_attach">Purchase Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#bank_attach">Bank Attachments</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#other_attach">Other Attachments</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="sales_attach" class="tab-pane active">
+                <form class="attachment-form" data-type="sales">
+
+                    <div class="attach_file_field">
+                        <label>
+                            <b>Add File: </b>
+                            <input type="file" name="attachments" required class="attachments" id="sales-attachment"/>
+                        </label>
+                        <br/>
+                            <button class="btn btn-warning" type="button" id="clear-sales-attachment">Clear</button>
+                        <br/>
+                    <label>
+                            <b>Description: </b>
+                            <input type="text" name="captions" required class="captions">
+                    </label>
+                    </div>
+
+                    <p><input type="submit" value="Save" class="btn"/></p>
+                </form>
+            </div>
+            <div id="purchase_attach" class="tab-pane">
+                <form class="attachment-form" data-type="purchase">
+
+                    <div class="attach_file_field">
+                        <label>
+                            <b>Add File: </b>
+                            <input type="file" name="attachments" required class="attachments" id="purchase-attachment"/>
+                        </label>
+                        <br/>
+                            <button class="btn btn-warning" type="button" id="clear-purchase-attachment" >Clear</button>
+                        <br/>
+                        <label>
+                            <b>Description: </b>
+                            <input type="text" name="captions" required class="captions">
+                        </label>
+
+                    </div>
+
+                    <p><input type="submit" value="Save" class="btn"/></p>
+
+                </form>
+            </div>
+            <div id="bank_attach" class="tab-pane">
+                <form class="attachment-form" data-type="bank">
+
+                    <div class="attach_file_field">
+                        <label>
+                            <b>Add File: </b>
+                            <input type="file" name="attachments" required class="attachments" id="bank-attachment"/>
+                        </label>
+                        <br/>
+                        <button class="btn btn-warning" type="button" id="clear-bank-attachment">Clear</button>
+                        <br/>
+                        <label>
+                            <b>Description: </b>
+                            <input type="text" name="captions" required class="captions">
+                        </label>
+                    </div>
+
+                    <p><input type="submit" value="Save" class="btn"/></p>
+                </form>
+            </div>
+            <div id="other_attach" class="tab-pane">
+                <form class="attachment-form" data-type="other">
+
+                    <div class="attach_file_field">
+                        <label>
+                            <b>Add File: </b>
+                            <input type="file" name="attachments" required class="attachments" id="other-attachment"/>
+
+                        </label>
+                        <br/>
+                        <button class="btn btn-warning" type="button" id="clear-other-attachment">Clear</button>
+                        <br/>
+                        <label>
+                            <b>Description: </b>
+                            <input type="text" name="captions" required class="captions">
+                        </label>
+                        <br/>
+
+
+
+                    </div>
+
+                    <p><input type="submit" value="Save" class="btn"/></p>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

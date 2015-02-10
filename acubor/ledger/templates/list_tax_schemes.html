@@ -1,0 +1,50 @@
+    {% extends 'dashboard.html' %}
+
+    {% block title %} Tax Scheme Register {% endblock %}
+
+    {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'create_tax_scheme' %}">Create Tax Scheme</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    {% endblock %}
+
+    {% block pageheader %}
+    Tax Scheme Register
+    {% endblock %}
+
+    {% block content %}
+
+    {% load pagination_tags %}
+    {% load sorting_tags %}
+
+    {% autosort tax_scheme  as sorted_tax_scheme %}
+    {% autopaginate sorted_tax_scheme 25 as paginated_sorted_tax_scheme %}
+    <div class="pull-right">
+        {% paginate %}
+    </div>
+    {% if paginated_sorted_tax_scheme|length > 0 %}
+
+        <table class=" table table-acubor table-striped table-bordered">
+            <thead>
+                <th>Name</th>
+                <th>Rate in Percentage</th>
+                <th>Collection Ledger</th>
+            </thead>
+            <tbody>
+                {% for item in paginated_sorted_tax_scheme %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}">  {{item.name}} </a></td>
+                    <td>{{item.percent}}</td>
+                    <td>{{item.collection_ledger}}</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+            <span style="font: 20px bold black;">No data found in database</span>
+    {% endif %}
+    <div class="pull-right">
+        {% paginate %}
+    </div>
+    {% endblock %}

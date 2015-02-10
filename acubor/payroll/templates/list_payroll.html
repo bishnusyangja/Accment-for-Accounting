@@ -1,0 +1,131 @@
+{% extends "dashboard.html" %}
+{% load payroll_filter %}
+{% load humanize %}
+{% load ledger_filters %}
+{% block title %}Payroll Register{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'payroll_register' %}">Payroll Register</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Payroll Register
+{% endblock %}
+
+{% block content %}
+
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <tr>
+            <th rowspan = "2">Date</th>
+            <th rowspan ="2">Voucher No.</th>
+            <th rowspan = "2">Name of Employee</th>
+            <th rowspan = "2">Voucher Type</th>
+            <th colspan = "2">Gross Pay</th>
+            <th colspan = "2">Deduction</th>
+            <th rowspan = "2">Net Pay</th>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td>Amount</td>
+            <td>Type</td>
+            <td>Amount</td>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for item in group_items %}
+            <tr>
+                <td>
+                    <a href ="/payroll/group-voucher/{{item.group_payroll.id}}/">{{ item.group_payroll.date|date:"m/d/Y" }}</a>
+                </td>
+                <td>{{ item.group_payroll.voucher_no }}</td>
+                <td>{{ item.employee }}</td>
+                <td>Group Items</td>
+                <td>{{ item.pay_head.name }}</td>
+                {% with a=item.get_worked_days|multiply:item.rate_day  b=item.get_worked_hours|multiply:item.rate_hour %}
+                <td style="text-align: right">{{ a|joda:b|intcomma|decimalise }}</td>
+                <td>Payroll Tax</td>
+                <td style="text-align: right">{{ item.payroll_tax|intcomma|decimalise }}</td>
+                {% with  tot=item.pay_head.current_cr|subtract:item.pay_head.current_dr|absolute t=item.payroll_tax %}
+                <td style="text-align: right">{{ a|add:b|subtract:t|intcomma|decimalise }}</td>
+                {% endwith %}
+                {% endwith %}
+
+            </tr>
+        {% endfor %}
+
+        {% for item in individual_items %}
+        {% with a=mylist.0|val:forloop.counter b=mylist.1|val:forloop.counter %}
+        {% with total_1=item.get_worked_days|multiply:item.day_rate total_2=item.get_worked_hours|multiply:item.hour_rate total_3=a|result:b %}
+        <tr>
+            <td rowspan = "{{ a|maxi:b|add:'1' }}"><a href ="/payroll/individual-voucher/{{item.id}}/">{{ item.date|date:'m/d/Y' }}</a></td>
+            <td rowspan = "{{ a|maxi:b|add:'1' }}">{{ item.voucher_no }}</td>
+            <td rowspan = "{{ a|maxi:b|add:'1' }}">{{ item.employee }}</td>
+            <td rowspan = "{{ a|maxi:b|add:'1' }}">Individual Items</td>
+            <td>{{ a.0.particular }}</td>
+            <td style="text-align: right">{{ a.0.amount|intcomma|decimalise }}</td>
+            <td>{{ b.0.particular }}</td>
+            <td style="text-align: right">{{ b.0.amount|intcomma|decimalise }}</td>
+
+            <td rowspan = "{{ a|maxi:b|add:'1' }}" style="text-align: right">{{ total_1|joda:total_2|joda:total_3|intcomma|decimalise }}</td>
+
+
+         </tr>
+
+            {% for i,j in a|combine:b %}
+                {% if not forloop.first %}
+                 <tr>
+                     {% if i.particular %}
+                        <td>{{ i.particular }}</td>
+                     {% else %}
+                        <td>{{ i }}</td>
+                     {% endif %}
+
+                     {% if i.particular %}
+                        <td style="text-align: right">{{ i.amount|intcomma|decimalise }}</td>
+                     {% else %}
+                        <td>{{ i }}</td>
+                     {% endif %}
+
+                    {% if j.particular %}
+                        <td>{{ j.particular }}</td>
+                     {% else %}
+                        <td>{{ j }}</td>
+                     {% endif %}
+
+                     {% if j.amount %}
+                        <td style="text-align: right">{{ j.amount|intcomma|decimalise }}</td>
+                     {% else %}
+                        <td>{{ j }}</td>
+                     {% endif %}
+                </tr>
+                {% endif %}
+             {% endfor %}
+
+             <tr>
+                <td>Basic Salary</td>
+                <td style="text-align: right">{{ total_1|joda:total_2|intcomma|decimalise }}</td>
+                 <td>-</td>
+                 <td>-</td>
+             </tr>
+
+            {% if a|maxi:b > 1 %}
+            <tr>
+               <td>Total</td>
+                {% with balance=a|total %}
+               <td style="text-align: right">{{  total_1|joda:total_2|joda:balance|intcomma|decimalise }}</td>
+                {% endwith %}
+               <td>Total</td>
+               <td style="text-align: right">{{ b|total|intcomma|decimalise }}</td>
+           </tr>
+            {% endif %}
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+{% endblock %}

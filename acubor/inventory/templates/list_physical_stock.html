@@ -1,0 +1,93 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Stock Register{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "all_physical_stocks" %}">Physical Stocks</a></li>
+{% endblock %}
+
+{% block extra-head %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.date-range').each(function (i, el) {
+                $(el).find('input').datepicker({
+                    format: 'yyyy-mm-dd'
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block pageheader %}
+    Physical Stock
+{% endblock %}
+
+{% block content %}
+
+    {% load pagination_tags %}
+    {% load sorting_tags %}
+
+    <div class="widget-box collapsed">
+        <div class="widget-header">
+            <div class="widget-toolbar">
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+            </div>
+            <h4>Search</h4>
+        </div>
+
+        <div class="widget-body">
+            <div class="widget-body-inner">
+                <div class="widget-main">
+                    <br>
+
+                    <form action="" method="get">
+                        {{ objects.form.as_p }}
+                        <input type="submit" class="btn" value="Search"/>
+                    </form>
+                </div>
+                <!-- /widget-main -->
+            </div>
+        </div>
+        <!-- /widget-body -->
+    </div>
+
+    <br>
+
+    {% autosort objects.qs as sorted_objects %}
+    {% autopaginate sorted_objects 25 as paginated_objects %}
+
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th>{% anchor voucher_no 'Voucher No' %}</th>
+        <th>{% anchor date 'Date' %}</th>
+        <th>{% anchor total_amount 'Amount' %}</th>
+        <th>{% anchor description 'Description' %}</th>
+        </thead>
+        <tbody>
+        {% for item in paginated_objects %}
+            <tr>
+                <td>
+                    <a href="{% url "view_physical_stock" item.id %}">
+                        {{ item.voucher_no }}
+                    </a>
+                </td>
+
+                <td>{{ item.date }}</td>
+
+                <td>{{ item.total_amount }}</td>
+
+                <td>{{ item.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% paginate %}
+
+    <a class="btn" href="{% url 'new_physical_stock' %}">New Physical Stock Voucher</a>
+
+
+{% endblock %}

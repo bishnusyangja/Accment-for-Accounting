@@ -1,0 +1,34 @@
+{% extends base_template %}
+
+{% block title %}{{ scenario }} Party {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_all_parties" %}">Parties</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>{{ scenario }} Party</li>
+{% endblock %}
+
+{% block pageheader %}
+{{ scenario }} Party
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <div class="row">
+        <div class="span12">
+            <input type="submit" value="Submit" class="btn"/>
+            {% if scenario == 'Update' %}
+            <a class="btn btn-danger" href="{% url 'delete_party' form.instance.id %}">Delete!</a>
+            {% endif %}
+        </div>
+
+    </div>
+</form>
+
+{% endblock %}

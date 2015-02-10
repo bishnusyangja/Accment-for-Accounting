@@ -1,0 +1,208 @@
+{% extends "dashboard.html" %}
+
+{% block title %} {{ scenario }} Bank Payment{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'list_bank_payments' %}">Bank Payment Register</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li><a href="{% url 'bank_payment' %}">Bank Payment</a></li>
+{% endblock %}
+
+{% block extra-head %}
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/jquery.maxlength-min.js"></script>
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+    <script src="{{ STATIC_URL }}js/bank_new.js"></script>
+    <script src="{{ STATIC_URL }}js/up_down.js"></script>
+    {% load filters %}
+    <script>
+        $(document).ready(function () {
+            var ko_data = {{data|jsonify}}
+                    vm = new BankPaymentViewModel(ko_data);
+            ko.applyBindings(vm);
+        });
+    </script>
+{% endblock %}
+
+{% block pageheader %}
+   <h2> <font style="color:blue;">Bank Payment</font></h2>
+{% endblock %}
+
+{% block content %}
+    {% if msg %}
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{msg}}</strong>
+    </div>
+    {% endif %}
+    {% if msg2 %}
+    <div class="alert alert-success alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{msg2}}</strong>
+    </div>
+    <script>
+        $(document).ready(function(){
+            location.href = "/bank/bank-payment/update/{{id}}"
+        });
+
+    </script>
+    {% endif %}
+
+    {{ form.non_field_errors }}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row-fluid">
+
+            <span class="span4">
+            {{ form.voucher_no.label_tag }}
+                <div class="input-append input-prepend input-mini dissolve">
+                    <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.cheque_deposit_prefix }}</span>
+                    {{ form.voucher_no }}
+                    <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.cheque_deposit_suffix }}</span>
+                </div>
+            {{ form.voucher_no.errors }}
+            </span>
+
+            <span class="span4">
+            {{ form.bank_account.label_tag }}
+            {{ form.bank_account }}
+            {{ form.bank_account.errors }}
+            </span>
+            <span class="span1"></span>
+
+            <span class="span3">
+            {{ form.date.label_tag }}
+            {{ form.date }}
+            {{ form.date.errors }}
+            </span>
+
+
+        </div>
+
+        <br/>
+
+        <div class="row-fluid" data-bind="with: particulars">
+
+            <input type="hidden" name="particulars" data-bind="value: ko.toJSON($data, null, 2)"/>
+
+            <table id="bank-payment-table" class="table table-bordered table-striped table-acubor table-sortable" id="voucher_table">
+                <thead>
+                <tr>
+                    <th class="span1">SN</th>
+                    <th class="span2">To</th>
+                    <th class="span3">Reference No</th>
+                    <th class="span3">Description</th>
+                    <th class="span2">Amount</th>
+                    <th class="span1"></th>
+                </tr>
+                </thead>
+
+                <tbody id="particulars-body">
+                <!-- ko foreach: rows -->
+                <tr>
+                    <td class="with_ip">
+                        <div class="drag_handle"><i class="icon-ellipsis-vertical"></i>
+                        </div>
+                        <span class="wid-pad pull-left" data-bind="text:  $index()+1"> </span>
+                    </td>
+                    <td class="with_ip">
+                        <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                               data-bind="value: to_account, select2: $root.accounts">
+                    </td>
+
+                    <td><input style="text-align:right" target = "inside_td" data-bind="value: reference_no"  /></td>
+                    <td><input style="text-align:right" target = "inside_td" data-bind="value: description"  /></td>
+                    <td><input style="text-align:right" target = "inside_td" data-bind="eval: amount, value: amount"  /></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i class="icon-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr>
+                    <td colspan="2">
+                        <a id="add-row" class="btn" data-bind="click: addRow">
+                            <i class="icon-plus-sign"></i> Add New Row
+                        </a>
+                    </td>
+                    <td colspan="2">
+                        <span class="pull-right"><strong >Grand Total</strong></span>
+                    </td>
+                    <td style="text-align:right">
+                        <strong><span class="myUnderLine" data-bind="text: znum(fnum(rnum($parent.grand_total())))"></span></strong>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="row-fluid">
+            <div class="span6">
+                {{ form.narration.label_tag }}
+                {{ form.narration }}
+                {{ form.narration.errors }}
+            </div>
+            <div class="span4">
+
+                {{ form.attachment.label_tag }}
+                {{ form.attachment }}
+                {{ form.attachment.errors }}
+            </div>
+            <div class="span2">
+                <label>
+                    <b>Clear Attachment: </b>
+                    <input type="button" id="clear-attachment" value="Clear!" class="btn btn-warning">
+                </label>
+
+            </div>
+
+
+            <script type="text/javascript">
+                $('textarea').maxlength({
+                maxCharacters:200,
+                status:true,
+                statusClass:"status",
+                showAlert:true,
+                slider:true
+                });
+            </script>
+
+        </div>
+
+        <br/>
+
+        <button name="save" class="btn" data-bind="click: $root.save">Save</button>
+        <button name="save_and_continue" class="btn" data-bind="click: $root.save_and_continue">Save & Continue</button>
+        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+        {% if approved %}
+            <a href="/bank/bank-payment/unapprove/{{id}}" class="btn">Unapprove</a>
+        {% else %}
+            <input class="btn" type="submit" value="Approve"
+                   data-bind="click: $root.approve">
+        {% endif %}
+        {% endifusergroup %}
+        {% if scenario == 'Update' %}
+            <a class="btn btn-danger" href="{% url 'delete_bank_payment' form.instance.id %}">Delete!</a>
+        {% endif %}
+
+    </form>
+<script>
+
+if({{ approved }} == 1){
+    $(':button').attr('disabled', true);
+    $(':input').attr('disabled', true);
+    $('.btn-danger').hide();
+    $('#add-row').hide();
+    }
+    //move arrow up and down
+$(document).click(function(){
+arrow_handling();
+});
+</script>
+
+{% endblock %}

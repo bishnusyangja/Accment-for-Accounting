@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap-responsive.min.css" rel="stylesheet"/>
+
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"/>
+
+    <link href="{{ STATIC_URL }}css/styles.css" rel="stylesheet"/>
+
+    <link href="{{ STATIC_URL }}css/base.css" rel="stylesheet"/>
+    <script src="{{ STATIC_URL }}js/vendors/jquery.js"></script>
+    <link rel="shortcut icon" href="{{ STATIC_URL }}website/images/ico/favicon.png" type="image/png">
+
+
+
+    {% block extra-head %}{% endblock %}
+
+</head>
+<body class="fixed-header useroff">
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+
+<div class="outer-container">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+</body>
+</html>

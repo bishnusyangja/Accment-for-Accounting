@@ -1,0 +1,174 @@
+/* style sheet for "letter" printing */
+@media print and (width: 8.5in) and (height: 11in) {
+  @page {
+      margin: 0.05in;
+  }
+}
+
+body{
+    font-size: 8pt;
+    font-family: arial;
+}
+.drag_handle, .select2-arrow, .btn, button, .navbar, #sidebar, #breadcrumbs {
+    display: none !important;
+}
+
+.page-header{
+    display: none;
+}
+
+#page-contnet {
+    padding: 0;
+}
+
+#main-content {
+    margin-left: 0 !important;
+
+}
+
+#ace-settings-container {
+    display: none;
+}
+
+td .select2-container .select2-choice {
+    border: none;
+}
+
+/*General print styles*/
+
+h2, h3 {
+    page-break-after: avoid;
+}
+
+img {
+    max-width: 100% !important;
+}
+
+article {
+    page-break-before: always;
+}
+
+ul, img {
+    page-break-inside: avoid;
+}
+
+h1 {
+    color: #000;
+    background: none;
+}
+
+nav, aside {
+    display: none;
+}
+
+body, article {
+    width: 8.3in;
+    margin: 0;
+    padding: 0;
+}
+
+
+.no-print {
+    display: none;
+}
+
+.do-print {
+    display: block !important;
+    opacity: 1;
+}
+
+.print-only {
+    display: inline-block !important;
+    opacity: 1;
+}
+
+.page-break {
+    display: block;
+    page-break-before: always;
+    height:1px !important;
+}
+.modal{
+    position: static;
+    margin-left: 0;
+    width: 8.7in;
+    border: 0;
+    left: 0;
+}
+.modal-body{
+    width: 8.7in;
+    overflow: visible;
+    padding: 0px;
+}
+h1,
+h2{
+    font-size: 10pt !important;
+    margin: 0;
+    padding: 0px;
+    line-height: 15px;
+    font-weight: bold;
+    page-break-after: avoid;
+    position: relative;
+    margin-bottom: 5pt;
+}
+
+.print-wrap{
+    width: 8.5in !important;
+    margin: 0 auto;
+    position: relative;
+    page-break-inside: avoid;
+    -webkit-region-break-inside: avoid;
+}
+.do-print .print-half{
+    float: left;
+    margin-right: 0.05in;
+    width: 4.1in;
+    display: inline-block;
+    margin-left: 0;
+}
+.do-print .print-half-last{
+    margin-right: 0;
+}
+
+
+table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	page-break-inside: avoid;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+}
+table.gridtable th {
+    page-break-inside: avoid;
+	border-width: 1px;
+	padding: 2px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+    page-break-inside: avoid;
+	border-width: 1px;
+	padding: 2px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+}
+
+table.gridtable thead {
+    display: table-header-group;
+    text-align: center;
+}
+table.gridtable tbody {
+    display: table-row-group;
+}
+
+#print-preview{
+    width: 100%;
+    margin-left: 50px;
+}
+*{
+    float: none;
+}
+

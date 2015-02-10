@@ -1,0 +1,43 @@
+{% extends 'dashboard.html' %}
+
+{% block title %}{{ scenario }} Attendance Parameter{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "attendance_parameter" %}">Attendance Parameter</a></li>
+{% endblock %}
+{% load filters %}
+{% load payroll_filter %}
+{% block extra-head %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+{% endcompress %}
+<!--<script>-->
+        <!--ko_data =-->
+        <!--{{ data|jsonify }}-->
+
+<!--</script>-->
+{% endblock %}
+
+{% block pageheader %}
+
+{% endblock %}
+
+{% block content %}
+<form method="post" action="/payroll/attendance-parameter/{{request.META.HTTP_REFERER|spliturl}}/">
+    {% csrf_token %}
+    <div class="panel panel-primary">
+        <div class="panel panel-heading">
+            {{ scenario }} Attendance Parameter
+        </div>
+        <div class="panel panel-body">
+
+        {{ form.as_p }}
+        </div>
+    </div>
+    <input type="submit" value="Save" class="btn btn-primary"/>
+</form>
+
+{% endblock %}

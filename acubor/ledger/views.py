@@ -1,0 +1,756 @@
+import json
+from datetime import date
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+
+from ledger.filters import LedgerFilter, LedgerAccountFilter
+from ledger.models import Account, JournalEntry, Category, Party, set_transactions, Transaction, BankAccountDetail, PartyAccountDetail, AccountTaxDetail, TaxScheme, InterestScheme
+from ledger.serializers import AccountSerializer, PartySerializer, CashVendorSerializer, TaxSchemeSerializer, CategorySerializer
+from forms import AccountForm, CategoryForm, PartyForm, BankAccountDetailForm, PartyAccountDetailForm, AccountTaxDetailForm, InterestSchemeForm, TaxSchemeForm
+from users.views import get_node
+import re
+from django.core.urlresolvers import reverse_lazy
+
+from django.core.context_processors import csrf
+import watson
+from lib import save_model
+from payroll.models import Employee
+
+
+@login_required()
+def ledger_search(request):
+    if request.is_ajax():
+        text = request.POST['text']
+        account = request.POST['account']
+        # print request
+        result = watson.search(text, models=(Transaction.objects.filter(company=request.user.currently_activated_company, account=account),))
+        datas = []
+        for item in result:
+            if item.object is not None:
+                temp = {}
+                temp['title'] = item.title
+                temp['url'] = item.object.get_absolute_url()
+                datas.append(temp)
+        return HttpResponse(json.dumps(datas), mimetype="application/json")
+
+
+@login_required()
+def search(request):
+    if request.is_ajax():
+        text = request.POST['text']
+        result = watson.search(text, models=(Account.objects.filter(company=request.user.currently_activated_company),))
+        datas = []
+        for item in result:
+            if item.object is not None:
+                temp = {}
+                temp['title'] = item.title
+                temp['url'] = item.object.get_absolute_url()
+                datas.append(temp)
+
+        return HttpResponse(json.dumps(datas), mimetype="application/json")
+
+@login_required
+def accounts_as_json(request):
+    accounts = Account.objects.filter(company=request.user.currently_activated_company).order_by('name')
+    items_data = AccountSerializer(accounts, day=date.today()).data
+    return HttpResponse(json.dumps(items_data), mimetype="application/json")
+
+
+@login_required
+def categories_as_json(request):
+    categories = Category.objects.filter(company=request.user.currently_activated_company).order_by('name')
+    items_data = CategorySerializer(categories).data
+    return HttpResponse(json.dumps(items_data), mimetype="application/json")
+
+
+@login_required
+def tax_schemes_as_json(request):
+    tax_schemes = TaxScheme.objects.filter(company=request.user.currently_activated_company).order_by('name')
+    items_data = TaxSchemeSerializer(tax_schemes).data
+    return HttpResponse(json.dumps(items_data), mimetype="application/json")
+
+
+@login_required
+def accounts_by_day_as_json(request, day):
+    accounts = Account.objects.filter(company=request.user.currently_activated_company).order_by('name')
+    items_data = AccountSerializer(accounts, day=day).data
+    return HttpResponse(json.dumps(items_data), mimetype="application/json")
+
+
+@login_required
+def customers_as_json(request):
+    objs = Party.objects.filter(company=request.user.currently_activated_company, customer_account__isnull=False).order_by('name')
+    objs_data = PartySerializer(objs).data
+    return HttpResponse(json.dumps(objs_data), mimetype="application/json")
+
+
+@login_required
+def suppliers_as_json(request):
+    objs = Party.objects.filter(company=request.user.currently_activated_company, supplier_account__isnull=False).order_by('name')
+    objs_data = PartySerializer(objs).data
+    return HttpResponse(json.dumps(objs_data), mimetype="application/json")
+
+
+@login_required
+def payheads_as_json(request):
+    objs = Account.objects.filter(company=request.user.currently_activated_company, category__name='Pay Head').order_by('name')
+    objs_data = AccountSerializer(objs).data
+    return HttpResponse(json.dumps(objs_data), mimetype="application/json")
+
+
+
+@login_required
+def account_form(request, category=None, id=None):
+    if request.is_ajax():
+        base_template = 'modal.html'
+
+    else:
+        base_template = 'dashboard.html'
+
+    d = request.user.currently_activated_company.settings.current_financial_year_started_on.strftime('%m/%d/%Y')
+    default_tax = TaxScheme.objects.filter(name='No Tax', company=request.user.currently_activated_company)[0]
+    if id:
+        account = Account.objects.get(id=id, company=request.user.currently_activated_company)
+        d = account.opening_as_on_date.strftime('%m/%d/%Y')
+        try:
+            bank_acc = BankAccountDetail.objects.get(account=account)
+        except BankAccountDetail.DoesNotExist:
+            bank_acc = BankAccountDetail()
+
+        try:
+            party_acc = PartyAccountDetail.objects.get(account=account)
+        except PartyAccountDetail.DoesNotExist:
+            party_acc = PartyAccountDetail()
+
+        try:
+            acc_tax = AccountTaxDetail.objects.get(account=account)
+            if not acc_tax.pri_tax_scheme:
+                acc_tax.pri_tax_scheme = default_tax
+            if not acc_tax.sec_tax_scheme_1:
+                acc_tax.sec_tax_scheme_1 = default_tax
+            if not acc_tax.sec_tax_scheme_2:
+                acc_tax.sec_tax_scheme_2 = default_tax
+            if not acc_tax.sec_tax_scheme_3:
+                acc_tax.sec_tax_scheme_3 = default_tax
+        except AccountTaxDetail.DoesNotExist:
+            acc_tax = AccountTaxDetail(pri_tax_scheme=default_tax,  sec_tax_scheme_1=default_tax,
+                                       sec_tax_scheme_2=default_tax, sec_tax_scheme_3=default_tax)
+
+        scenario = 'Update'
+    else:
+        account = Account(opening_as_on_date=request.user.currently_activated_company.settings.current_financial_year_started_on)
+        bank_acc = BankAccountDetail()
+        party_acc = PartyAccountDetail()
+        acc_tax = AccountTaxDetail(pri_tax_scheme=default_tax,  sec_tax_scheme_1=default_tax,
+                                       sec_tax_scheme_2=default_tax, sec_tax_scheme_3=default_tax)
+        scenario = 'Create'
+
+    if request.POST:
+
+        form = AccountForm(data=request.POST, instance=account, company=request.user.currently_activated_company, initial={'opening_as_on_date':d})
+
+        bank_acc_form = BankAccountDetailForm(data=request.POST, instance=bank_acc)
+        party_acc_form = PartyAccountDetailForm(data=request.POST, instance=party_acc)
+        acc_tax_form = AccountTaxDetailForm(data=request.POST, instance=acc_tax, company=request.user.currently_activated_company)
+
+        if form.is_valid():
+            cat = form.data['category']
+            category = Category.objects.filter(id=cat, company=request.user.currently_activated_company).values_list('name', flat=True)[0]
+            cat_nam = Category.objects.filter(id=cat, company=request.user.currently_activated_company)[0]
+            category = find_which_for_all(get_node(request, category))
+
+        if category is not None:
+            if category == 'bank_account':
+                if form.is_valid() and bank_acc_form.is_valid():
+
+                    item = form.save(commit=False)
+                    item.company = request.user.currently_activated_company
+
+                    item.save()
+                    form.save_m2m()
+
+                    bank = bank_acc_form.save()
+                    bank.account = account
+                    bank.company = request.user.currently_activated_company
+                    bank.save()
+                    message = "Saved!"
+                    if request.is_ajax():
+                        return render(request, 'callback.html', {'obj': AccountSerializer(item).data})
+                    # return redirect(reverse_lazy('update_account',  kwargs={'id': account.id}))
+                    return render(request, 'account_form.html', {'scenario': scenario, 'form': form,
+                                                    'bank_acc_form': bank_acc_form,
+                                        'party_form': party_acc_form, 'acc_tax_form': acc_tax_form,
+                                        'base_template': base_template, 'message': message})
+            elif category == 'party_account':
+
+                if form.is_valid() and party_acc_form.is_valid():
+                    item = form.save(commit=False)
+
+                    item.company = request.user.currently_activated_company
+                    item.save()
+                    form.save_m2m()
+
+                    party = party_acc_form.save()
+                    party.account = account
+                    party.company = request.user.currently_activated_company
+                    party.save()
+                    message = "Saved!"
+                    if request.is_ajax():
+                        return render(request, 'callback.html', {'obj': AccountSerializer(item).data})
+                    return render(request, 'account_form.html', {'scenario': scenario, 'form': form,
+                                                    'bank_acc_form': bank_acc_form,
+                                        'party_form': party_acc_form, 'acc_tax_form': acc_tax_form,
+                                        'base_template': base_template, 'message': message})
+
+            # certainly this will be account_tax
+            else:
+                if form.is_valid() and acc_tax_form.is_valid():
+                    item = form.save(commit=False)
+                    item.company = request.user.currently_activated_company
+                    item.save()
+                    form.save_m2m()
+
+                    tax = acc_tax_form.save()
+                    tax.account = account
+                    tax.company = request.company
+                    tax.save()
+                    message = "Saved!"
+                    if request.is_ajax():
+                        return render(request, 'callback.html', {'obj': AccountSerializer(item).data})
+                    return render(request, 'account_form.html', {'scenario': scenario, 'form': form,
+                                                    'bank_acc_form': bank_acc_form,
+                                        'party_form': party_acc_form, 'acc_tax_form': acc_tax_form,
+                                        'base_template': base_template, 'message': message})
+        else:
+
+            if form.is_valid():
+                item = form.save(commit=False)
+                item.company = request.user.currently_activated_company
+                item.save()
+                form.save_m2m()
+                if cat_nam.name == "Employee":
+                    account_ledger = Account.objects.filter(name=item.name, company=request.user.currently_activated_company)[0]
+                    try:
+                        Employee.objects.get(name=form.data['name'], company=request.user.currently_activated_company, account=account_ledger)
+                    except Employee.DoesNotExist:
+                        emp = Employee(name=form.data['name'], company=request.user.currently_activated_company, account=account_ledger)
+                        emp.save()
+                message = "Saved!"
+                if request.is_ajax():
+                    return render(request, 'callback.html', {'obj': AccountSerializer(item).data})
+                return render(request, 'account_form.html', {'scenario': scenario, 'form': form,
+                                                    'bank_acc_form': bank_acc_form,
+                                        'party_form': party_acc_form, 'acc_tax_form': acc_tax_form,
+                                        'base_template': base_template, 'message': message})
+
+    else:
+        if category:
+            category = get_node(request, str(category))
+            account.category = category
+            form = AccountForm(instance=account, company=request.user.currently_activated_company, initial={'opening_as_on_date':d})
+        else:
+            form = AccountForm(instance=account, company=request.user.currently_activated_company, initial={'opening_as_on_date':d})
+        bank_acc_form = BankAccountDetailForm(instance=bank_acc)
+        party_acc_form = PartyAccountDetailForm(instance=party_acc)
+        acc_tax_form = AccountTaxDetailForm(instance=acc_tax, company=request.user.currently_activated_company)
+
+
+    return render(request, 'account_form.html', {'scenario': scenario, 'form': form, 'bank_acc_form': bank_acc_form,
+                'party_form': party_acc_form, 'acc_tax_form': acc_tax_form, 'base_template': base_template})
+
+
+# checking a given item is or not in the my_list
+def has_if(my_list, item):
+    for value in my_list:
+        if value == item:
+            return value
+    return None
+
+
+# finding whether there is or not the category which belong to the bank_account,
+# party_account and account_tax for the given item
+def get_which(item):
+    bank_account = ['Bank Account', 'Bank OD']
+    account_tax = ['Sales', 'Purchase', 'Indirect Income', 'Income']
+    party_account = ['Sundry Debtors', 'Sundry Creditors', 'Account Payables', 'Account Receivables']
+
+    if has_if(bank_account, item) is None:
+        if has_if(account_tax, item) is None:
+            if has_if(party_account, item) is None:
+                return None
+            else:
+                return 'party_account'
+        else:
+            return 'account_tax'
+    else:
+        return 'bank_account'
+
+
+#  checking get_which for all the ancestors of the given category
+def find_which_for_all(node):
+    ancestors = []
+    for ancestor in node.get_ancestors(ascending=False, include_self=True).all():
+        ancestors.append(str(ancestor.name))
+    # result = find_which_for_all(ancestors)
+    # do something here that check all ancestors instantly but not for all if found any break the condition.
+    for value in ancestors:
+        if get_which(value) is not None:
+            return get_which(value)
+        else:
+            continue
+    return None
+
+# receiving the ajax_request from account_form to check whether that is or not the category falling in
+# bank_account, party_account and account_tax
+@login_required
+def detect_category(request):
+    if request.is_ajax():
+        category = request.POST['category']
+        ret = re.sub(r"-*", "", category)
+        category = ret.lstrip().rstrip()
+        if category == '':
+            return 0
+        node = get_node(request, str(category))
+        data = find_which_for_all(node)
+        return HttpResponse(data, mimetype="application/json")
+    else:
+        return None
+
+
+@login_required
+def list_accounts(request):
+    objects = Account.objects.filter(company=request.user.currently_activated_company)
+    # filtered_items = LedgerFilter(request.GET, queryset=objects, company=request.user.currently_activated_company)
+    filtered = insertion_sort([item for item in objects])
+    if request.POST:
+        text = request.POST['search-text']
+        result = watson.search(text, models=(Account.objects.filter(company=request.user.currently_activated_company),))
+        res = map(lambda x: x.object, result)
+        return render(request, 'list_accounts.html', {'accounts': res})
+    return render(request, 'list_accounts.html', {'accounts': filtered})
+
+
+#INSERTION SORT FOR LISTING THE ACCOUNT IN ASCENDING ORDER OF NAME
+def insertion_sort(L):
+    n = len(L)
+    for j in range(1, n):
+        i = 0
+        while L[j].name > L[i].name:
+            i += 1
+        m = L[j]
+        for k in range(0, j - i):
+            L[j - k] = L[j - k - 1]
+        L[i] = m
+    return L
+
+
+@login_required
+def list_all_parties(request):
+    objects = Party.objects.filter(company=request.user.currently_activated_company)
+    return render(request, 'list_all_parties.html', {'objects': objects})
+
+
+@login_required
+def view_account(request, id):
+    account = get_object_or_404(Account, id=id, company=request.user.currently_activated_company)
+    # transactions = account.transactions
+    base_template = 'dashboard.html'
+    journal_entries = JournalEntry.objects.filter(transactions__account_id=id).order_by('date', 'id').prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
+    if request.POST:
+        text = request.POST['search-text']
+        account = request.POST['account']
+        account = get_object_or_404(Account, id=account, company=request.user.currently_activated_company)
+
+        result = watson.search(text, models=(Transaction.objects.filter(company=request.user.currently_activated_company, account=account),))
+        datas = []
+        for item in result:
+            datas.append(item.object.journal_entry)
+        # datas = list(set(datas))
+        return render(request, 'view_account.html', {
+        'account': account,
+        # 'transactions': transactions.all(),
+        'journal_entries': datas,
+        'base_template': base_template,
+    })
+
+    # f = LedgerAccountFilter(request.GET, queryset=journal_entries)
+
+    return render(request, 'view_account.html', {
+        'account': account,
+        # 'transactions': transactions.all(),
+        'journal_entries': journal_entries,
+        'base_template': base_template,
+    })
+
+
+@login_required
+def view_category(request, id):
+    category = get_object_or_404(Account, id=id, company=request.user.currently_activated_company)
+    # transactions = account.transactions
+    cate_ss = Category.objects.filter(company=request.user.currently_activated_company)
+    base_template = 'dashboard.html'
+    journal_entries = JournalEntry.objects.filter(transactions__account__category__in=cate_ss).order_by('date', 'id'
+    ) \
+        .prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
+    return render(request, 'view_category.html', {
+        'category': category,
+        # 'transactions': transactions.all(),
+        'journal_entries': journal_entries,
+        'base_template': base_template,
+    })
+
+@login_required
+def list_categories(request):
+    categories = Category.objects.filter(company=request.user.currently_activated_company)
+    return render(request, 'list_categories.html', {'categories': categories})
+
+
+@login_required
+def create_category(request):
+    category = Category()
+    if request.POST:
+        form = CategoryForm(data=request.POST, company=request.user.currently_activated_company)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.company = request.user.currently_activated_company
+            category.save()
+            if request.is_ajax():
+                return render(request, 'callback.html', {'obj': {'id': category.id, 'name': str(category)}})
+            return redirect('/ledger/categories/')
+    else:
+        form = CategoryForm(instance=category, company=request.user.currently_activated_company)
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+    return render(request, 'category_create_form.html', {
+        'form': form,
+        'base_template': base_template,
+    })
+
+
+@login_required
+def update_category(request, id):
+    category = get_object_or_404(Category, id=id, company=request.user.currently_activated_company)
+    if request.POST:
+        form = CategoryForm(data=request.POST, instance=category, company=request.user.currently_activated_company)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.company = request.user.currently_activated_company
+            category.save()
+            return redirect('/ledger/categories/')
+    else:
+        form = CategoryForm(instance=category, company=request.user.currently_activated_company)
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+    return render(request, 'category_update_form.html', {
+        'form': form,
+        'base_template': base_template
+    })
+
+
+@login_required
+def delete_category(request, id):
+    category = get_object_or_404(Category, id=id, company=request.user.currently_activated_company)
+    accounts = Account.objects.filter(company=request.user.currently_activated_company, category=category)
+    if not category.is_default:
+        if len(accounts) == 0:
+            category.delete()
+            return redirect('/ledger/categories/')
+    else:
+        return redirect('/ledger/category/' + id)
+
+
+@login_required
+def delete_account(request, id):
+    obj = get_object_or_404(Account, id=id, company=request.user.currently_activated_company)
+    transactions = Transaction.objects.filter(account=obj)
+    if not obj.is_default:
+        if len(transactions) == 0:
+            obj.delete()
+            return redirect('/ledger/')
+    return redirect('/ledger/' + id)
+
+
+@login_required
+def delete_party(request, id):
+    obj = get_object_or_404(Party, id=id, company=request.user.currently_activated_company)
+    account1 = obj.customer_account
+    account2 = obj.supplier_account
+    if not object.is_default:
+        if account1:
+            if len(Transaction.objects.filter(account=account1)) > 0:
+                return redirect('/ledger/party/' + id)
+        if account2:
+            if len(Transaction.objects.filter(account=account2)) > 0:
+                return redirect('/ledger/party/' + id)
+    obj.delete()
+    return redirect('/ledger/parties/')
+
+
+@login_required
+def party_form(request, id=None):
+    if id:
+        scenario = 'Update'
+        party = get_object_or_404(Party, id=id, company=request.user.currently_activated_company)
+    else:
+        scenario = 'Create'
+        party = Party()
+    for query in request.GET:
+        setattr(party, query, request.GET[query])
+    if request.POST:
+        form = PartyForm(data=request.POST, instance=party)
+        if form.is_valid():
+            party = form.save(commit=False)
+            party.company = request.user.currently_activated_company
+            party.save()
+            if request.is_ajax():
+                return render(request, 'callback.html', {'obj': PartySerializer(party).data})
+            redirect('/ledger/parties')
+    else:
+        form = PartyForm(instance=party)
+        form.hide_field(request)
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+    return render(request, 'party_form.html', {
+        'form': form,
+        'scenario': scenario,
+        'base_template': base_template,
+    })
+
+
+@login_required
+def cash_and_vendors(request):
+    objs = Account.objects.filter(Q(category__name="Cash Account") | Q(category__name="Suppliers")).filter(
+        company=request.user.currently_activated_company)
+    objs_data = CashVendorSerializer(objs).data
+    return HttpResponse(json.dumps(objs_data), mimetype="application/json")
+
+
+@login_required
+def fixed_assets(request):
+    objs = Account.objects.filter(category__name='Fixed Assets', company=request.user.currently_activated_company)
+    objs_data = AccountSerializer(objs).data
+    return HttpResponse(json.dumps(objs_data), mimetype="application/json")
+
+@login_required
+def create_vendor_account(request):
+    scenario = 'Create'
+    party = Party()
+    party.type = 'Supplier'
+    for query in request.GET:
+        setattr(party, query, request.GET[query])
+    if request.POST:
+        form = PartyForm(data=request.POST, instance=party)
+        if form.is_valid():
+            party = form.save(commit=False)
+            party.company = request.user.currently_activated_company
+            party.save()
+            if request.is_ajax():
+                return render(request, 'callback.html', {'obj': CashVendorSerializer(party.supplier_account).data})
+            redirect('/ledger/parties')
+    else:
+        form = PartyForm(instance=party)
+        form.fields['type'].widget = form.fields['type'].hidden_widget()
+        form.fields['type'].label = ''
+        form.hide_field(request)
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+    return render(request, 'party_form.html', {
+        'form': form,
+        'scenario': scenario,
+        'base_template': base_template,
+    })
+
+
+@login_required
+def list_cash_accounts(request):
+    items = Account.objects.filter(company=request.user.currently_activated_company, category__name="Cash Account")
+    return render(request, 'list_cash_accounts.html', {'items': items})
+
+
+@login_required
+def cash_book(request, id):
+    account = Account.objects.get(id=id)
+    journal_entries = JournalEntry.objects.filter(transactions__account_id=account.id).order_by('date',
+                                                                                                'id') \
+        .prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
+    return render(request, 'cash_book.html',
+                  {'account': account, 'journal_entries': journal_entries})
+
+
+@login_required
+def tax_scheme(request, id=None):
+    if id:
+        tax_shm = TaxScheme.objects.get(id=id)
+        scenario = 'Update'
+    else:
+        tax_shm = TaxScheme()
+        scenario = 'Create'
+
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+
+    if request.POST:
+        form = TaxSchemeForm(data=request.POST, instance=tax_shm, company=request.user.currently_activated_company)
+        if form.is_valid():
+            tax = form.save(commit=False)
+            tax.company = request.user.currently_activated_company
+            name_list = TaxScheme.objects.filter(name=tax.name, company=request.user.currently_activated_company)
+
+            if name_list and scenario == 'Create':
+                msg = 'Duplicate name is not allowed.'
+                return render(request, 'tax_scheme.html', {'scenario': scenario, 'form': form, 'msg': msg, 'base_template': base_template})
+            else:
+                tax.save()
+            if request.is_ajax():
+                return render(request, 'callback.html', {'obj': TaxSchemeSerializer(tax).data})
+            else:
+                return redirect('/ledger/tax_scheme/'+str(tax.id) +'/')
+    else:
+        form = TaxSchemeForm(instance=tax_shm, company=request.user.currently_activated_company)
+
+    return render(request, 'tax_scheme.html', {'scenario': scenario, 'form': form, 'base_template': base_template})
+
+
+@login_required
+def list_tax_schemes(request):
+    tax_sch = TaxScheme.objects.filter(company=request.user.currently_activated_company)
+    return render(request, 'list_tax_schemes.html', {'tax_scheme': tax_sch})
+
+
+
+@login_required
+def interest_scheme(request, id=None):
+    if id:
+        interest_shm = InterestScheme.objects.get(id=id)
+        scenario = 'Update'
+    else:
+        interest_shm = InterestScheme()
+        scenario = 'Create'
+
+    if request.is_ajax():
+        base_template = 'modal.html'
+    else:
+        base_template = 'dashboard.html'
+
+    if request.POST:
+        form = InterestSchemeForm(data=request.POST, instance=interest_shm, company=request.user.currently_activated_company)
+        if form.is_valid():
+            interest = form.save(commit=False)
+            interest.company = request.user.currently_activated_company
+            interest.save()
+            return redirect('/ledger/interest_scheme/'+str(interest.id) +'/')
+    else:
+        form = InterestSchemeForm(instance=interest_shm, company=request.user.currently_activated_company)
+
+    return render(request, 'interest_scheme.html', {'scenario': scenario, 'form': form, 'base_template': base_template})
+
+
+@login_required
+def list_interest_schemes(request):
+    interest_sch = InterestScheme.objects.filter(company=request.user.currently_activated_company)
+    return render(request, 'list_interest_schemes.html', {'interest_scheme': interest_sch})
+
+
+# to add multiple account simultaneously
+@login_required
+def multiple_account(request):
+    return render(request, 'multiple_account.html')
+
+@login_required
+def save_multiple_account(request):
+    params = json.loads(request.body)
+    company = request.user.currently_activated_company
+    dct = {}
+    model = Account
+
+    validity = valid_multiple_row(params['particulars']['rows'], 'name')
+    if validity:
+        dct['error_message'] = 'Multiple row with name ' + validity + ' is not allowed.'
+        return HttpResponse(json.dumps(dct), mimetype='application/json')
+
+    for index, row in enumerate(params['particulars']['rows']):
+        values = {'name': row.get('name'), 'category_id': int(row.get('category')), 'company': request.user.currently_activated_company,
+                  'opening_as_on_date': request.user.currently_activated_company.settings.current_financial_year_started_on
+                  }
+
+        opening_dr = row.get('opening_dr', 0)
+        if opening_dr == '':
+            opening_dr = 0
+        values['opening_dr'] = float(opening_dr)
+
+        opening_cr = row.get('opening_cr', 0)
+        if opening_cr == '':
+            opening_cr = 0
+        values['opening_cr'] = float(opening_cr)
+
+        object = model.objects.filter(name=row.get('name'.strip()))
+        if object:
+            dct['error_message'] = "The account with name " + object[0].name + " already exists."
+            return HttpResponse(json.dumps(dct), mimetype='application/json')
+        else:
+            save_model(Account(), values)
+
+        submodel = Account.objects.filter(name=row.get('name'), company=company)[0]
+        try:
+            cat = Category.objects.get(id=int(row.get('category')))
+            if cat.name == "Employee":
+                obj, created = Employee.objects.get_or_create(name=row.get('name'), company=company, account=submodel)
+                if not created:
+                    dct['error_message'] = 'Duplicate name is not allowed.'
+                    return HttpResponse(json.dumps(dct), mimetype='application/json')
+        except Category.DoesNotExist:
+            pass
+
+    return HttpResponse(json.dumps(dct), mimetype='application/json')
+
+
+# to add multiple category simultaneously
+@login_required
+def multiple_category(request):
+    return render(request, 'multiple_category.html')
+
+
+@login_required
+def save_multiple_category(request):
+    params = json.loads(request.body)
+    dct = {}
+    model = Category
+
+    validity = valid_multiple_row(params['particulars']['rows'], 'name')
+    if validity:
+        dct['error_message'] = 'Multiple row with name ' + validity + ' is not allowed.'
+        return HttpResponse(json.dumps(dct), mimetype='application/json')
+
+    for index, row in enumerate(params['particulars']['rows']):
+        values = { 'name': row.get('name'), 'parent_id': int(row.get('parent')),
+                   'company': request.user.currently_activated_company, 'is_default': False
+                  }
+        submodel, created = model.objects.get_or_create(name=row.get('name').strip(), defaults=values)
+        if not created:
+            submodel = save_model(submodel, values)
+
+    return HttpResponse(json.dumps(dct), mimetype='application/json')
+
+
+# multiple row validation with same name where param is passed as 'name'
+def valid_multiple_row(rows, param):
+    temp = []
+    for row in rows:
+        item = row.get(param)
+        if item in temp:
+            return item
+        else:
+            temp.append(item)
+    return None

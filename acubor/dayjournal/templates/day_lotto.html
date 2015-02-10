@@ -1,0 +1,113 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Day Journal for {{ day_journal.date }}{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "new_day_journal" %}">Day Journal</a></li>
+{% endblock %}
+
+{% block extra-head %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/lotto.js"></script>
+{% endcompress %}
+<script>
+        $(document).ready(function () {
+            {% load filters %}
+            ko.applyBindings(new LottoDetailModel({{ day_journal|jsonify }}));
+        });
+
+</script>
+{% endblock %}
+
+{% block pageheader %}
+Details for {{ day_journal.date }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row-fluid collapse-group" data-bind="with: lotto_detail">
+    <div><h2 data-bind="css: state()">Lotto Detail</h2>
+
+    </div>
+
+    <div class="collapse">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th rowspan="2">SN</th>
+                <th rowspan="2">Type</th>
+                <th rowspan="2">Rate in $</th>
+                <th rowspan="2">Day Opening</th>
+                <th colspan="4">Add: Purchase</th>
+                <th rowspan="2">Total</th>
+                <th colspan="2">Sold</th>
+                <th colspan="2">Day Closing</th>
+                <th colspan="2">Actual</th>
+                <th colspan="2">Difference</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th>Pack</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Amt</th>
+                <th>Qty</th>
+                <th>Amt</th>
+                <th>Qty</th>
+                <th>Amt</th>
+                <th>Qty</th>
+                <th>Amt</th>
+                <th>Qty</th>
+                <th>Amt</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody id="lotto-detail">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span class="wid-pad pull-left" data-bind="text: $index()+1"> </span>
+                </td>
+                <td>
+                    <select class="span12"
+                            data-bind="options: $root.inventory_accounts, optionsText: 'name', optionsValue: 'id', value: type, optionsCaption: 'Choose an account..', select2: {}, event: {change: $root.inventory_account_changed}"></select>
+                </td>
+                <td data-bind="editableText: rate, numeric: true"></td>
+                <td data-bind="text: opening, numeric: true"></td>
+                <td data-bind="editableText: purchase_pack, numeric: true"></td>
+                <td data-bind="editableText: purchase_quantity, numeric: true"></td>
+                <td data-bind="text: purchase_total()"></td>
+                <td data-bind="text: purchase_amount()"></td>
+                <td data-bind="text: total()"></td>
+                <td data-bind="editableText: sold_quantity, numeric: true"></td>
+                <td data-bind="text: sold_amount()"></td>
+                <td data-bind="text: closing_quantity()"></td>
+                <td data-bind="text: closing_amount()"></td>
+                <td data-bind="editableText: actual_quantity, numeric: true"></td>
+                <td data-bind="text: actual_amount()"></td>
+                <td data-bind="text: difference_quantity()"></td>
+                <td data-bind="text: difference_amount()"></td>
+                <td align="center">
+                    <button class="close" data-bind="click: $parent.removeRow">&times;</button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            </tbody>
+        </table>
+
+        <span data-bind="text: message()"></span>
+                    <span class="collapse-show-on-expand pull-right">
+                        <button class="button" data-bind="click: addRow"><i class="icon-plus-sign"></i> Add New Row
+                        </button>
+                    <button class="button" data-bind="click: save"><i class="icon-save"></i> Save</button>
+                    <button class="button" data-bind="click: reset">Reset</button>
+                   </span>
+    </div>
+</div>
+
+{% endblock %}

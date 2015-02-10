@@ -1,0 +1,126 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ category.name }} Category Ledger View {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_category" %}">Categories</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>{{ category.name }}</li>
+{% endblock %}
+
+{% block pageheader %}
+{{ category.name }}
+{% endblock %}
+
+{% block extra-head %}
+{% endblock %}
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load filters %}
+
+<!--<div class="widget-box collapsed">-->
+<!--<div class="widget-header">-->
+<!--<div class="widget-toolbar">-->
+<!--<a href="#" data-action="collapse">-->
+<!--<i class="icon-chevron-up"></i>-->
+<!--</a>-->
+<!--</div>-->
+<!--<h4>Search</h4>-->
+<!--</div>-->
+<!--<div class="widget-body">-->
+<!--<div class="widget-body-inner">-->
+<!--<div class="widget-main">-->
+<!--<br>-->
+
+<!--<form action="" method="get">-->
+<!--{{ objects.form.as_p }}-->
+<!--<input type="submit" value="Search" class="btn"/>-->
+<!--</form>-->
+<!--</div>-->
+<!--&lt;!&ndash; /widget-main &ndash;&gt;-->
+<!--</div>-->
+<!--</div>-->
+<!--&lt;!&ndash; /widget-body &ndash;&gt;-->
+<!--</div>-->
+<!--<br>-->
+
+{% autosort journal_entries as sorted_journal_entries %}
+{% autopaginate sorted_journal_entries 10 as paginated_journal_entries %}
+
+
+<h2>Transactions:</h2>
+
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th class="span2" style="text-align:center">{% anchor date 'Date' %}</th>
+    <th class="span4" style="text-align:center">Particulars</th>
+    <th class="span3" style="text-align:center">Description</th>
+    <th class="span2" style="text-align:center">VCH Type</th>
+    <th class="span1" style="text-align:center">{% anchor voucher_no 'VCH No.' %}</th>
+    <th class="span2" style="text-align:center">{% anchor debit_amount 'Debit Amount' %}</th>
+    <th class="span2" style="text-align:center">{% anchor credit_amount 'Credit Amount' %}</th>
+    </thead>
+
+    <tbody>
+    {% for entry in paginated_journal_entries %}
+    <tr id="row-{{ entry.id }}">
+        <td class="span2" style="text-align:center">
+            {{ entry.date }}
+        </td>
+        <td class="span4" style="text-allign:center">
+            {% for transaction in entry.transactions.all %}{% if not forloop.first %}
+            ,
+            {% endif %}
+            <a href="{{ transaction.account.get_absolute_url }}/#{{ entry.id }}">{{ transaction.account.name }}</a>
+            {% endfor %}
+        </td>
+        <td class="span3" style="text-align:center">
+            {% if entry.content_type.app_label == 'dayjournal' %}
+            {{''}}
+            {% else %}
+            {{ entry.source.get_voucher_description }}
+            {% endif %}
+        </td>
+        <td class="span2" style="text-align:center">
+            {% if entry.content_type.app_label == 'dayjournal' %}
+            Day Journal
+            {% else %}
+            {{ entry.content_type.name|refine_voucher_type }}
+            {% endif %}
+        </td>
+        <td class="span1" style="text-align:right">
+            <a href="{{ entry.source.get_absolute_url }}">
+                {% if entry.source.get_voucher_no %}
+                {{ entry.source.get_voucher_no }}
+                {% else %}
+                {{''}}
+                {% endif %}
+            </a>
+        </td>
+
+        {% for transaction in entry.transactions.all %}
+        {% if transaction.account.id == account.id %}
+        <td class="span2" style="text-align:right">
+            {{ transaction.dr_amount|if_not_none }}
+        </td>
+        <td class="span2" style="text-align:right">
+
+            {{ transaction.cr_amount|if_not_none }}
+        </td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <!--<tr>-->
+    <!--<td colspan="5" style="text-align:right"><b>Total</b></td>-->
+    <!--<td class="span2" style="text-align:right"><b>{{ account.current_dr }}</b></td>-->
+    <!--<td class="span2" style="text-align:right"><b>{{ account.current_cr }}</b></td>-->
+    <!--</tr>-->
+    </tbody>
+</table>
+
+{% paginate %}
+{% endblock %}

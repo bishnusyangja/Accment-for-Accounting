@@ -1,0 +1,36 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ account.name }} Ledger View {% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li>Cash Book</li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ account.name }}</li>
+{% endblock %}
+
+{% block pageheader %}
+    {{ account.name }}
+{% endblock %}
+
+{% block extra-head %}
+
+{% endblock %}
+{% load filters %}
+{% block content %}
+        <form action="/ledger/search/" method="post">{% csrf_token %}
+            <!--{{form}}-->
+            <input type="text" name="content" />
+            <input type="submit" value="Search"/>
+        </form>
+
+
+        {% if result %}
+            {% for item in result %}
+
+                <p> <a href= "{{ item.get_absolute_url }}">{{ item }}</a> </p>
+
+            {% endfor %}
+        {% endif %}
+
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "dashboard.html" %}
+
+{% block title %}All Accounts{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_account" %}">Accounts</a></li>
+{% endblock %}
+
+{% block pageheader %}
+All Accounts
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+
+{% autosort accounts  as sorted_accounts %}
+{% autopaginate sorted_accounts 25 as paginated_sorted_accounts %}
+{% load compress %}
+{% compress js %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+<script src="{{ STATIC_URL }}js/watson_search.js"></script>
+{% endcompress %}
+<form method="post" action=".">
+    {% csrf_token %}
+    <input style="height:20%;width:60%;align:center;" id="search-box" type="text" name="search-text" class="form-control" placeholder="Enter Keyword to Search"/>
+    <!--<input type="hidden"  name="account" value="{{account.id}}" />-->
+    <input class="btn btn-primary" type="submit" name="submit" value="Submit">
+    <div id="results" class="hidden" style="width:61%;height:200px;overflow:auto;"><table id="search-results" style="width:100%;border:1px solid rgba(0,0,0,0.2) ;align:center;"></table></div>
+</form>
+<!--<h4>Search</h4>-->
+<!--<div class="widget-box collapsed">-->
+    <!--<div class="widget-header">-->
+        <!--<div class="widget-toolbar">-->
+            <!--<a href="#" data-action="collapse">-->
+                <!--<i class="icon-chevron-up"></i>-->
+            <!--</a>-->
+        <!--</div>-->
+
+    <!--</div>-->
+    <!--<div class="widget-body">-->
+        <!--<div class="widget-body-inner">-->
+            <!--<div class="widget-main">-->
+                <!--<br>-->
+
+                <!--<form action="" method="get">-->
+                    <!--<table style="width:200px;height:75px">-->
+                        <!--<thead>-->
+                        <!--<tr>-->
+                            <!--<td>Category</td>-->
+                            <!--<td>Name</td>-->
+                        <!--</tr>-->
+                        <!--</thead>-->
+                        <!--<tbody>-->
+                        <!--<tr>-->
+                            <!--<td style="padding:15px"> {{ accounts2.form.category }}</td>-->
+                            <!--<td style="padding:15px">{{ accounts2.form.name }}</td>-->
+                        <!--</tr>-->
+                        <!--</tbody>-->
+                    <!--</table>-->
+
+                    <!--<input type="submit" value="Search" class="btn"/>-->
+                <!--</form>-->
+            <!--</div>-->
+            <!--&lt;!&ndash; /widget-main &ndash;&gt;-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--&lt;!&ndash; /widget-body &ndash;&gt;-->
+<!--</div>-->
+<!--<br/>-->
+<div class="pull-right">
+    {% paginate %}
+</div>
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>Name</th>
+    <th>Category</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+
+    {% for account in paginated_sorted_accounts %}
+    <tr>
+        <td>
+            <a href="{% url "view_account" account.id %}">
+            {{ account.name }}
+            </a>
+        </td>
+        <td>
+            {{ account.category }}
+        </td>
+        <td>
+            <a href="{% url "update_account" account.id %}">
+            Edit
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="pull-right">
+    {% paginate %}
+</div>
+
+
+<a class="btn" href="{% url 'create_account' %}">Create New Account</a>
+<script type="text/javascript">
+    $("#id_category").select2();
+    new search_watson("/ledger/search/");
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Inventory Categories{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_inventory_category" %}">Inventory Categories</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Inventory Categories
+{% endblock %}
+
+{% block content %}
+
+    {% load mptt_tags %}
+    <ul>
+        {% recursetree categories %}
+            <li>
+                <a href="{% url 'update_inventory_category' node.id %}">{{ node.name }}</a>
+                {% if not node.is_leaf_node %}
+                    <ul class="children">
+                        {{ children }}
+                    </ul>
+                {% endif %}
+            </li>
+        {% endrecursetree %}
+    </ul>
+
+    <a class="btn" href="{% url 'create_inventory_category' %}">Create New Category</a>
+
+{% endblock %}

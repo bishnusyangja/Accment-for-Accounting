@@ -1,0 +1,41 @@
+    {% extends 'dashboard.html' %}
+
+    {% block title %} Interest Scheme Register {% endblock %}
+
+    {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'create_interest_scheme' %}">Create Interest Scheme</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    {% endblock %}
+
+    {% block pageheader %}
+    Interest Scheme Register
+    {% endblock %}
+
+    {% block content %}
+    {% if interest_scheme|length > 0 %}
+
+        <table class=" table table-acubor table-striped table-bordered">
+            <thead>
+                <th>Name</th>
+                <th>Rate in Percentage</th>
+                <th>Collection Ledger</th>
+                <th>Interest Period</th>
+            </thead>
+            <tbody>
+                {% for item in interest_scheme %}
+                <tr>
+                    <td>{{item.name}}</td>
+                    <td>{{item.rate_in_pct}}</td>
+                    <td>{{item.collection_ledger}}</td>
+                    <td>{{item.interest_period}}</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+            <span style="font: 20px bold black;">No data found in database</span>
+    {% endif %}
+
+    {% endblock %}

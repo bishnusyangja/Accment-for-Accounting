@@ -1,0 +1,37 @@
+{% extends base_template %}
+
+{% block title %} Update Inventory Category {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_inventory_category" %}">Inventory Categories</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>Update Inventory Category</li>
+{% endblock %}
+
+{% block pageheader %}
+Inventory Update Category
+{% endblock %}
+
+{% block content %}
+{%  if msg %}
+    <div class="alert alert-warning alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{msg}}</strong>
+    </div>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <input type="submit" value="Submit" class="btn"/>
+    <a class="btn btn-danger" href="{% url 'delete_inventory_category' form.instance.id %}">Delete this category!</a>
+
+</form>
+{% if message %}
+<script>
+    bs_alert.success("{{ message }}");
+</script>
+{% endif %}
+{% endblock %}

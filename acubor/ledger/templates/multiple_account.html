@@ -1,0 +1,87 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Multiple Account{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="/ledger/">Account Register</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<!--<li><a href="#">Attendance Voucher</a></li>-->
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/up_down.js"></script>
+<script src="{{ STATIC_URL }}js/multiple_account.js"></script>
+{% endcompress %}
+
+{% endblock %}
+
+{% block content-pageheader %}
+{{ scenario }} Multiple Account
+{% endblock %}
+{% block content %}
+
+        <div class="row-fluid" data-bind="with: particulars">
+
+            <input type="hidden" name="particulars" data-bind="value: ko.toJSON($data, null, 2)"/>
+
+            <table class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th rowspan="2" style="text-align:center;">SN</th>
+                    <th rowspan="2" style="text-align:center;">Account Name</th>
+                    <th rowspan="2" style="text-align:center;">Category</th>
+                    <th colspan="2" style="text-align:center;">Opening</th>
+                    <th rowspan="2" style="text-align:center;">Action</th>
+                </tr>
+                <tr>
+                    <th >Debit Balance</th>
+                    <th >Credit Balance</th>
+                </tr>
+                </thead>
+
+                <tbody id="particulars-body">
+                <!-- ko foreach: rows -->
+                <tr>
+                    <td class="with_ip">
+                        <div class="drag_handle"><i class="icon-ellipsis-vertical"></i>
+                        </div>
+                        <span class="wid-pad pull-left" data-bind="text:  $index()+1"> </span>
+                    </td>
+                   <td><input style="text-align:right" target = "inside_td" data-bind="value: name"  /></td>
+
+                    <td><input type="hidden" data-url="{% url 'create_category' %}" data-to="categories" data-name="Category"
+                               data-bind="value: category, select2: $root.categories"></td>
+                    <td><input style="text-align:right" target = "inside_td" data-bind="eval: opening_dr, value: opening_dr"  /></td>
+                    <td><input style="text-align:right" target = "inside_td" data-bind="eval: opening_cr, value: opening_cr"  /></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i class="icon-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr>
+                    <td colspan="6">
+                        <a id="add-row" class="btn" data-bind="click: addRow">
+                            <i class="icon-plus-sign"></i> Add New Row
+                        </a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+            <br/>
+            <a class="btn" data-bind="click: $root.our_save">
+                            <i class="icon-save"></i> Save
+                        </a>
+
+        </div>
+
+{% endblock %}

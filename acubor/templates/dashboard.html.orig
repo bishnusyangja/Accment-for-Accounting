@@ -1,0 +1,376 @@
+<!DOCTYPE HTML>
+<html>
+{% load filters %}
+{% load compress %}
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap-responsive.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+
+
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"/>
+
+    <link href="{{ STATIC_URL }}css/vendors/w8-responsive.min.css" rel="stylesheet"/>
+
+    <link href="{{ STATIC_URL }}css/vendors/w8.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/w8-skins.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/datepicker.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/select2.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/print.css" rel="stylesheet" media="print"/>
+
+    <link href="{{ STATIC_URL }}css/styles.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/base.css" rel="stylesheet"/>
+
+    <script src="{{ STATIC_URL }}js/vendors/jquery.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/w8-elements.min.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/w8.min.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/bootstrap.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/bootstrap-datepicker.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/select2.js"></script>
+     <script src="https://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
+     <script src="{{STATIC_URL}}js/vendors/jquery.geocomplete.min.js" ></script>
+<<<<<<< HEAD
+     <script src="{{STATIC_URL}}js/vendors/humane.min.js" ></script>
+    <link href="{{ STATIC_URL }}css/vendors/bigbox.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/jackedup.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/libnotify.css" rel="stylesheet"/>
+=======
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.0/css/bootstrapValidator.min.css"/>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.0/js/bootstrapValidator.min.js"></script>
+>>>>>>> f069f3931095e664500a7bf2fe6e2341718fd65e
+    {% compress js %}
+    <script src="{{ STATIC_URL }}js/base.js"></script>
+    <script src="{{ STATIC_URL }}js/up_down.js"></script>
+    {% endcompress %}
+    <link rel="shortcut icon" href="{{ STATIC_URL }}website/images/ico/favicon.png" type="image/png">
+    {% load filters %}
+    <script>
+        global_settings =
+        {{ request|get_settings|jsonify }}
+
+    </script>
+
+    {% block extra-head %}{% endblock %}
+
+</head>
+
+<body>
+<div class="navbar navbar-inverse" >
+    <div class="navbar-inner">
+        <div class="container" style="postion:fixed;">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- MY NAV BAR -->
+<ul class="nav">
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            {{ request.user.currently_activated_company }} <i class="icon-caret-down"></i>
+        </a>
+        <ul class="dropdown-menu">
+            {% for role in request.user.roles.all %}
+            {% if role.company.id != request.user.currently_activated_company.id %}
+            <li>
+                <a href="/user/set-company/{{ role.company.id }}">Use
+                    as {{ role.company }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </li>
+</ul>
+
+{% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+    <ul class="nav nav-pills">
+    <li class="dropdown">
+      <a href="#" data-toggle="dropdown" class="dropdown-toggle">Entries <b class="caret"></b></a>
+      <ul class="dropdown-menu" id="menu1">
+          {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+            <li><a href="/day/">Day Journal</a></li>
+          {% endif %}
+        <li><a href="/voucher/invoice/">Invoice</a></li>
+        <li><a href="/voucher/journal/">Journal Voucher</a></li>
+        <!--<li class="divider"></li>-->
+        <li class="dropdown-submenu">
+            <a href="#">Bank</a>
+            <ul class="dropdown-menu">
+                <li><a href="/bank/bank-deposit/">Bank Deposit</a> </li>
+                <li><a href="/bank/bank-payment/">Bank Payment</a> </li>
+            </ul>
+        </li>
+       <li class="dropdown-submenu">
+        <a href="#">Cash</a>
+        <ul class="dropdown-menu">
+            <li><a href="/voucher/cash-receipt/">Cash Receipt</a> </li>
+            <li><a href="/voucher/cash-payment/">Cash Payment</a> </li>
+        </ul>
+      </li>
+      <li><a href="/inventory/physicalstock/">Physical Stock Voucher</a></li>
+      <li><a href="/payroll/attendance-ledger/">Attendence Register</a> </li>
+      <li class="dropdown-submenu">
+        <a href="#">Payroll Entries</a>
+        <ul class="dropdown-menu">
+            <li><a href="/payroll/group-voucher/">Group Payroll</a> </li>
+            <li><a href="/payroll/individual-voucher/">Individual Payroll</a> </li>
+        </ul>
+      </li>
+          <li><a href="/voucher/purchase-voucher/">Purchase Voucher</a></li>
+      <li><a href="/voucher/fixed-asset/">Fixed Asset</a></li>
+      {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+      <li><a href="/day/scratch-off-latest/">Scratch Off Entry</a></li>
+      {% endif %}
+      </ul>
+    </li>
+    <li class="dropdown">
+      <a href="#" data-toggle="dropdown" class="dropdown-toggle">Book Of Accounts<b class="caret"></b> </a>
+      <ul class="dropdown-menu" id="menu2">
+        <li><a href="/ledger/">Ledgers</a> </li>
+        {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+        <li><a href="/day/journals2/{% now "Y" %}/ ">Day Journal Register</a> </li>
+        {% endif %}
+        <li><a href="/voucher/invoices/">Sales Register</a></li>
+        <li><a href="/voucher/journals/">Journal Register</a> </li>
+        <li class="dropdown-submenu">
+            <a href="#">Bank Registers</a>
+            <ul class="dropdown-menu">
+                <li><a href="/bank/bank-deposits/">Bank Deposits</a> </li>
+                <li><a href="/bank/bank-payments/">Bank Payments</a> </li>
+            </ul>
+        </li>
+        <li class="dropdown-submenu">
+            <a href="#">Cash Registers</a>
+            <ul class="dropdown-menu">
+                <li><a href="/voucher/cash-receipts/">Cash Receipts</a> </li>
+                <li><a href="/voucher/cash-payments/">Cash Payments</a> </li>
+            </ul>
+        </li>
+        <li><a href="/payroll/register/">Payroll Register</a> </li>
+        <li><a href="/payroll/attendance-ledger/">Attendence Register</a> </li>
+        <li><a href="/voucher/purchase-vouchers">Purchase Register</a> </li>
+        <li><a href="/voucher/fixed-assets/">Fixed Assets Register</a> </li>
+        {% if request.user.currently_activated_company.settings.company_type == "Gas Station and Store" or request.user.currently_activated_company.settings.company_type == "Convenience Store" %}
+        <li><a href="/day/scratch-off-latest-register/">Scratch Off Register</a> </li>
+        {% endif %}
+        <li><a href="/inventory/items/">Stock Items</a> </li>
+      </ul>
+    </li>
+    <li class="dropdown">
+      <a href="#" data-toggle="dropdown" class="dropdown-toggle">Settings<b class="caret"></b> </a>
+      <ul class="dropdown-menu" id="menu3">
+          <li><a href="/settings/company/">Company Settings</a> </li>
+          <li><a href="/settings/voucher/">Voucher Settings</a> </li>
+          <li class="dropdown-submenu">
+              <a href="#">Account Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/create/">Create New</a> </li>
+                  <li><a href="/ledger/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Account Category Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/category/create/">Create New</a> </li>
+                  <li><a href="/ledger/categories/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+            <a href="#">Inventory Settings</a>
+              <ul class="dropdown-menu">
+                  <li class="dropdown-submenu">
+              <a href="#">Items Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/inventory/create/">Create New</a> </li>
+                  <li><a href="/inventory/items/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Category Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/inventory/category/create/">Create New</a> </li>
+                  <li><a href="/inventory/categories/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Units Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/inventory/unit/create/">Create New</a> </li>
+                  <li><a href="/inventory/units/">View/Edit</a> </li>
+              </ul>
+          </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Bank Account Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/create/bank-account/">Create New</a> </li>
+                  <li><a href="/bank/accounts/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Party Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/party/create/">Create New</a> </li>
+                  <li><a href="/ledger/parties/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Tax Scheme Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/tax_scheme/create/">Create New</a> </li>
+                  <li><a href="/ledger/tax_schemes/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Interest Scheme Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/ledger/interest_scheme/create/">Create New</a> </li>
+                  <li><a href="/ledger/interest_schemes/">View/Edit</a> </li>
+              </ul>
+          </li>
+          <li class="dropdown-submenu">
+              <a href="#">Employee Setting</a>
+              <ul class="dropdown-menu">
+                  <li><a href="/payroll/employee/create/">Create New Employee</a> </li>
+                  <li><a href="/payroll/employees/">View/Edit</a> </li>
+              </ul>
+          </li>
+      </ul>
+    </li>
+    <li class="dropdown">
+        <a href="#" data-toggle="dropdown" class="dropdown-toggle">Reporting<b class="caret"></b> </a>
+        <ul class="dropdown-menu" id="menu4">
+            <li><a href="/report/trial-balance/">Trial Balance</a> </li>
+            <li><a href="/report/balance-sheet/">Balance Sheet</a> </li>
+            <li><a href="/report/profit-and-loss/">Profit & Loss</a> </li>
+        </ul>
+    </li>
+</ul>
+{% endifusergroup %}
+
+
+
+            <div class="nav-collapse collapse">
+                {% if user.is_authenticated %}
+                <ul class="pull-right nav ">
+                    <li class="dropdown">
+                        <a href="/user/{{ user.email }}" class="dropdown-toggle" data-toggle="dropdown">
+                            {{ user.email }} <i class="icon-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+                            <li><a href="/user/roles/">Users Settings</a>
+                            </li>
+                            {% endifusergroup %}
+                            <li><a href="/user/logout">Logout</a>
+
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <form method="post" action="{% url 'django.contrib.auth.views.login' %}"
+                      class="navbar-form header-login pull-right">
+                    {% csrf_token %} {% if state %} {{ state }} {% endif %} {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}"/>{% endif %}
+                    <input type="text" class="span2" name="username" value="{{ username }}" required
+                           placeholder="Email"/>
+                    <input type="password" class="span2" name="password" value="" required placeholder="Password"/>
+
+                    <input type="submit" value="Log In" class="btn"/>
+                    <br/>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" id="main-container">
+
+<div id="main-content" class="clearfix">
+    <div id="breadcrumbs">
+        <ul class="breadcrumb">
+
+            {% block breadcrumbs %}
+            <li>
+                <i class="icon-home"></i>
+                <a href="/application/">Dashboard</a>
+                        <span class="divider"><i class="icon-angle-right"></i>
+                        </span>
+            </li>
+            {% endblock %}
+
+
+
+        </ul>
+        <!--.breadcrumb-->
+
+        <div class="pull-right">
+            {% block controls %}
+                <a href="javascript:window.print();"><i class="icon-print"></i> Print</a>
+            {% endblock %}
+        </div>
+
+    </div>
+
+    <div id="page-content" class="clearfix">
+        {% block broadcast_messages %}
+            {% if request.user.currently_activated_company.is_test_company %}
+                <div class="alert alert-error no-print">
+                    You are using Accment for a Demo Company. You can play around most of the features but don't save the
+                    real data of your actual Company. It is accessible to everyone who sign's up in Accment. And the data
+                    that you entered will be regularly deleted. We won't be held responsible for the loss of data stored in
+                    Demo Company account. To add your own company please create a new company by going into
+                    <a href="/user/company/setup/">this link.</a>
+                </div>
+            {% endif %}
+        {% endblock %}
+
+        {% block noscriptcheck %}
+            <noscript>
+                <div class="alert alert-danger">
+                    <i class="fa fa-times fa-2x mydanger" style="float:left;"></i>
+                    <h4>&nbsp;&nbsp;For full functionality of this site it is necessary to enable JavaScript.
+                        Here are the <a href="http://www.enable-javascript.com/" target="_blank">
+                    instructions how to enable JavaScript in your web browser</a>.</h4>
+                </div>
+
+                <style>
+                    .mydanger {
+                        color: #ff0000;
+                    }
+                </style>
+            </noscript>
+        {% endblock %}
+
+        <div class="page-header position-relative">
+            <h1>{% block pageheader %}{% endblock %}</h1>
+        </div>
+
+        <div id="alert_placeholder"></div>
+
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+</div>
+
+<a href="#" id="btn-scroll-up" class="btn btn-small btn-inverse">
+    <i class="icon-double-angle-up icon-only bigger-110"></i>
+</a>
+
+</body>
+
+</html>

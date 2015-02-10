@@ -1,0 +1,114 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Day Attendance Voucher{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "day_attendance_register" %}">Day Attendance Register</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li><a href="{% url "create_attendance_voucher" %}">Day Attendance Voucher</a></li>
+{% endblock %}
+{% load filters %}
+{% block extra-head %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/attendance_voucher.js"></script>
+{% endcompress %}
+<script>
+        ko_data =
+        {{ data|jsonify }}
+
+</script>
+{% endblock %}
+
+{% block pageheader %}
+{{ scenario }} Day Attendance Voucher
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <span data-bind="text: message(), css: state()"></span>
+
+    <div class="row-fluid">
+        <span class="span6"></span>
+        <span class="span2">Voucher No.</span>
+        <span class="span4 pull-left"><input type="text" data-bind="value: voucher_no" required></span>
+    </div>
+
+    <div class="row-fluid">
+        <span class="span6"></span>
+        <span class="span2">Voucher Date</span>
+            <span class="span4"><input type="text" data-bind="value: date" class="date-picker"
+                                       required></span>
+    </div>
+    <br/>
+
+    <div>
+        Employee: &nbsp;&nbsp;<input type="hidden" data-name="Employee" data-url="{% url 'create_employee' %}"
+                                     data-bind="value: employee, select2: $root.employees">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        From : &nbsp;&nbsp<input type="text" data-bind="value: from_date" class="date-picker"
+                                 required>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        To :&nbsp;&nbsp;<input type="text" data-bind="value: to_date" class="date-picker"
+                               required>
+
+    </div>
+    <br/>
+    <table class="table table-bordered table-striped table-sortable">
+        <tr>
+
+        </tr>
+        <tr>
+            <td>Total Working Days</td>
+            <td><input target="inside_td" data-bind="value: total_working_days, numeric: true"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Full Present Days</td>
+            <td><input target="inside_td" data-bind="value: full_present_day, numeric: true"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Half Present Days</td>
+            <td><input target="inside_td" data-bind="value:half_present_day,  numeric: true"/></td>
+            <td><input target="inside_td" data-bind="value: half_multiplier, numeric: true"/></td>
+        </tr>
+        <tr>
+            <td>Early/Late Attendance Days</td>
+            <td><input target="inside_td" data-bind="value: early_late_attendance_day, numeric: true"/></td>
+            <td><input target="inside_td" data-bind="value: early_late_multiplier, numeric: true"/></td>
+        </tr>
+        <tr>
+            <td>Total Present Days</td>
+            <td><input target="inside_td" data-bind="value: total_present_day()"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total Absent Days</td>
+            <td><input target="inside_td" data-bind="value: total_absent_day()"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total OT Hours</td>
+            <td><input target="inside_td" data-bind="value: total_ot_hours, numeric: true"/></td>
+            <td></td>
+        </tr>
+    </table>
+
+    {% if scenario == 'Update' %}
+    <a class="btn delete-warn" href=" /payroll/day-attendance-voucher/delete/{{ data.id }} ">Delete</a>
+    {% endif %}
+    <input class="btn" type="submit" value="Save" data-bind="click: $root.save">
+    <input class="btn" type="submit" value="Save & Continue" data-bind="click: $root.save"
+           data-continue="true">
+    </div>
+</form>
+
+{% endblock %}

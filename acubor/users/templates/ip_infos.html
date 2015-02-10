@@ -1,0 +1,44 @@
+{% extends "dashboard.html" %}
+
+{% block title %}IP Informations{% endblock %}
+
+{% load filters %}
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% block content %}
+
+{% autosort tracked_data  as item %}
+{% autopaginate item 20 as items %}
+<div class="pull-right">
+    {% paginate %}
+</div>
+<table class="table table-acubor table-striped table-bordered">
+<thead>
+<tr>
+    <td>IP Address</td>
+    <td>Count</td>
+    <td>Country</td>
+    <td>Continent</td>
+    <td>Timezone</td>
+    <td>Latitude</td>
+    <td>Longitude</td>
+</tr>
+</thead>
+<tbody>
+{% for ite in items %}
+<tr>
+    <td>{{ite.ipaddress}}</td>
+    <td>{{ite.count}}</td>
+    <td>{{ite.country}}</td>
+    <td>{{ite.continent}}</td>
+    <td>{{ite.timezone}}</td>
+    <td>{{ite.latitude}}</td>
+    <td>{{ite.longitude}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="pull-right">
+    {% paginate %}
+</div>
+{% endblock %}

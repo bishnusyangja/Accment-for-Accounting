@@ -1,0 +1,99 @@
+{% extends "dashboard.html" %}
+ {% load payroll_filter %}
+{% block title %}Hour Attendance{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'hour_attendance_register' %}">Hour Attendance Register</a></li>
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+{% load compress %}
+    <script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+     {% compress js %}
+    <script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+      {% endcompress %}
+{% endblock %}
+
+{% block pageheader %}
+    Hour Attendance Register
+{% endblock %}
+
+
+{% block content %}
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th>Date</th>
+        <th>Voucher No.</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Employee</th>
+        <th>Day</th>
+        <th>Working Time</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        {% for i in data.0 %}
+        {% with j=forloop.counter|add:-1 %}
+            <tr>
+                {% if data.1|index:j|length > 1 %}
+                    <td rowspan="{{ data.1|index:j|length|add:1 }} ">{{ i.date }}</td>
+                    <td rowspan="{{ data.1|index:j|length|add:1 }} ">{{ i.voucher_no }}</td>
+                    <td rowspan="{{ data.1|index:j|length|add:1 }} ">{{ i.from_date }}</td>
+                    <td rowspan="{{ data.1|index:j|length|add:1 }} ">{{ i.to_date }}</td>
+                    <td rowspan="{{ data.1|index:j|length|add:1 }} ">{{ i.employee }}</td>
+
+                    {% for k in data.1|index:j %}
+                        {% if forloop.first %}
+                            <td>{{ k.day }}</td>
+                            <td>{{ k|work_time }}</td>
+                        {% endif %}
+                    {% endfor %}
+
+                    <td rowspan="{{ data.1|index:j|length|add:1 }}">
+                        <a href ="/payroll/attendance-voucher/{{ i.id }}/">Edit</a>
+                    </td>
+
+                {% elif data.1|index:j|length > 0 %}
+                    <td>{{ i.date }}</td>
+                    <td>{{ i.voucher_no }}</td>
+                    <td>{{ i.from_date }}</td>
+                    <td>{{ i.to_date }}</td>
+                    <td>{{ i.employee }}</td>
+
+                    {% for k in data.1|index:j %}
+                        {% if forloop.first %}
+                            <td>{{ k.day }}</td>
+                            <td>{{ k|work_time }}</td>
+                        {% endif %}
+                    {% endfor %}
+
+                    <td>
+                        <a href ="/payroll/attendance-voucher/{{ i.id }}/">Edit</a>
+                    </td>
+                {% endif %}
+
+            </tr>
+                {% for k in data.1|index:j %}
+                {% if not forloop.first %}
+                    <tr>
+                        <td>{{ k.day }}</td>
+                        <td>{{ k|work_time }}</td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+                {% if data.1|index:j|length > 1 %}
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td><strong>{{ tot_work|index:j|ssb:0 }}</strong></td>
+                    </tr>
+                {% endif %}
+
+        {% endwith %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

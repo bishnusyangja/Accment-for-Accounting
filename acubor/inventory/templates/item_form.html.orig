@@ -1,0 +1,147 @@
+{% extends base_template %}
+
+{% block title %}{{ scenario }} Inventory Item {% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_all_items" %}">Inventory Items</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ scenario }} Inventory Item</li>
+{% endblock %}
+
+{% block pageheader %}
+    {{ scenario }} Inventory Item
+{% endblock %}
+
+{% block content %}
+<<<<<<< HEAD
+    <form method="post">
+=======
+    {# {{ form.non_field_errors }} #}
+    {# {{ form.errors }} #}
+    <form method="post" id="registrationForm">
+>>>>>>> f069f3931095e664500a7bf2fe6e2341718fd65e
+        {% csrf_token %}
+        {#        <div class="row">#}
+        {#            <div class="span3">#}
+        {#                {% csrf_token %}#}
+        {#                {{ form.code.label_tag }}#}
+        {#                {{ form.code }}#}
+        {#                {{ form.name.label_tag }}#}
+        {#                {{ form.name }}#}
+        {#                {{ form.description.label_tag }}#}
+        {#                {{ form.description }}#}
+        {#            </div>#}
+        {#            <div class="span3">#}
+        {#                {{ form.sales_price.label_tag }}#}
+        {#                {{ form.sales_price }}#}
+        {#                {{ form.sales_account.label_tag }}#}
+        {#                {{ form.sales_account }}#}
+        {#                {{ form.sales_tax_scheme.label_tag }}#}
+        {#                {{ form.sales_tax_scheme }}#}
+        {#            </div>#}
+        {#            <div class="span3">#}
+        {#                {{ form.purchase_price.label_tag }}#}
+        {#                {{ form.purchase_price }}#}
+        {#                {{ form.purchase_tax_scheme.label_tag }}#}
+        {#                {{ form.purchase_tax_scheme }}#}
+        {#            </div>#}
+        {#            <div>#}
+        {#                {{ form.purchase_account.label_tag }}#}
+        {#                {{ form.purchase_account }}#}
+        {#                {{ form.category.label_tag }}#}
+        {#                {{ form.category }}#}
+        {#            </div>#}
+        {#        </div>#}
+<<<<<<< HEAD
+{%  if msg %}
+    <div class="alert alert-warning alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{msg}}</strong>
+    </div>
+{% endif %}
+        {{ form.as_p }}
+=======
+
+         {# {{ form.as_p }} #}
+        <div class="form-group">
+            {{ form.name.label_tag}}
+            {{ form.name }}
+        </div>
+        <div class="form-group">
+            {{ form.category.label_tag}}
+            {{ form.category }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label_tag}}
+            {{ form.description }}
+        </div>
+        <div class="form-group">
+            {{ form.opening_stock_quantity.label_tag}}
+            {{ form.opening_stock_quantity }}
+        </div>
+        <div class="form-group">
+            {{ form.unit.label_tag}}
+            {{ form.unit }}
+        </div>
+>>>>>>> f069f3931095e664500a7bf2fe6e2341718fd65e
+
+        {% block buttons %}
+            <div class="row">
+                <div class="span12">
+                    <input type="submit" value="Submit" class="btn"/>
+                    {% if scenario == 'Update' %}
+                        <a class="btn btn-danger" href="{% url 'delete_inventory_item' form.instance.id %}">Delete!</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endblock buttons %}
+    </form>
+<<<<<<< HEAD
+{% if message %}
+<script>
+    bs_alert.success("{{ message }}");
+</script>
+{% endif %}
+=======
+
+        <script>
+        $('#registrationForm').bootstrapValidator({
+        // To use feedback icons, ensure that you use Bootstrap v3.1.0 or later
+        feedbackIcons: {
+            valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove',
+            validating: 'glyphicon glyphicon-refresh'
+        },
+        fields: {
+            name: {
+                message: 'Name is required here',
+                validators: {
+                    notEmpty: {
+                        message: 'The name is required and cannot be empty'
+                    },
+                    stringLength: {
+                        min: 5,
+                        max: 30,
+                        message: 'The username must be more than 5 and less than 30 characters long'
+                    },
+                    regexp: {
+                        regexp: /^[a-zA-Z0-9]+$/,
+                        message: 'The username can only consist of alphabetical and number'
+                    }
+                }
+            },
+            unit: {
+                message: 'Unit is required here',
+                validators: {
+                    notEmpty: {
+                        message: 'The Unit is required and cannot be empty'
+                    }
+                }
+            },
+        }
+    });
+
+        </script>
+>>>>>>> f069f3931095e664500a7bf2fe6e2341718fd65e
+{% endblock %}

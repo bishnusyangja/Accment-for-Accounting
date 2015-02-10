@@ -1,0 +1,29 @@
+{% extends base_template %}
+
+{% block title %} Create Category {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_category" %}">Categories</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>Create Category</li>
+{% endblock %}
+
+{% block pageheader %}
+Create Category
+{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <div class="row">
+        <div class="span12">
+            <input type="submit" value="Submit" class="btn"/>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

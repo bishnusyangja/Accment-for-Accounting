@@ -1,0 +1,34 @@
+{% load filters %}
+<script>
+    var obj = {{ obj|jsonify }};
+    var no_of_modals = $('.modal').length;
+    $('#modal' + $('.modal').length).modal('hide');
+    $('#modal' + $('.modal').length).remove();
+    el = $(window.last_active_select.pop());
+
+    var matches = el.data('bind').match(/select2: \$root\.([a-z_]+)/);
+    if (el.data('to')) {
+        {#        if (typeof vm[el.data('add-to')] == 'function')#}
+        {#            vm[el.data('add-to')]().push(obj);#}
+        {#        else#}
+        vm[el.data('to')].push(obj);
+        el.select2('data', obj);
+        $('.select2-offscreen').trigger('change');
+    }
+    else if (matches) {
+        var match = matches[1];
+        if (typeof vm[match] == 'function')
+            vm[match]().push(obj);
+        else
+            vm[match].push(obj);
+        el.select2('data', obj);
+        el.trigger('change');
+    }
+    else {
+        el.append("<option value='" + obj.id + "'>" + obj.name + "</option>")
+        el.trigger('change');
+        el.select2('val', obj.id);
+    }
+    el.select2('close');
+
+</script>

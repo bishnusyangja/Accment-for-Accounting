@@ -1,0 +1,246 @@
+{% extends "dashboard.html" %}
+
+{% block breadcrumbs %}
+<li>
+    <i class="icon-home"></i>
+    <a href="{% url "home" %}">Dashboard</a>
+</li>
+
+{% endblock %}
+
+{% block pageheader %}
+Dashboard
+{% endblock %}
+
+{% block title %}Acubor Accounting Dashboard {% endblock %}
+
+{% block extra-head %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
+{% endblock %}
+
+{% load filters %}
+
+{% block content %}
+
+<div id="page-content" class="clearfix">
+
+<div class="row-fluid">
+<!--PAGE CONTENT BEGINS HERE-->
+
+
+<div class="row-fluid">
+<div class="span12">
+<div class="widget-content">
+
+    <div class="shortcuts">
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon journal"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Day Journal</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a href="/day/" tabindex="-1">For Today</a>
+                    </li>
+                    <li>
+                        <a href="/day/{% yesterday %}/" tabindex="-1">For Yesterday</a>
+                    </li>
+
+                    <li>
+                        <a href="/day/journals/" tabindex="-1">Day Journal Register</a>
+                    </li>
+
+                    <li>
+                        <input type="text" id="day-journal-date" class="date-picker"
+                               data-date-format="yyyy-mm-dd" placeholder="Pick a date..."/>
+                        <button id="day-journal-selection-button" class="btn btn-mini">Go</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon transaction"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Transactions</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        Sales: <a class="inline" href="/voucher/invoices/" tabindex="-1">Register</a> |
+                        <a class="inline" href="/voucher/invoice/" tabindex="-1">New</a>
+                    </li>
+                    <li>
+                        Purchase: <a class="inline" href="/voucher/purchases/" tabindex="-1">Register</a>
+                        |
+                        <a class="inline" href="/voucher/purchase/new/" tabindex="-1">New</a>
+                    </li>
+                    <li>
+                        Journal Voucher: <a class="inline" href="/voucher/journals/" tabindex="-1">Register</a>
+                        |
+                        <a class="inline" href="/voucher/journal/" tabindex="-1">New</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon bank"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Bank</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        Accounts: <a class="inline" href="/bank/accounts/" tabindex="-1">All</a> |
+                        <a class="inline" href="/bank/account/create/" tabindex="-1">New</a>
+                    </li>
+
+                    <li>
+                        Cash Deposit: <a class="inline" href="/bank/cash-deposits/"
+                                         tabindex="-1">All</a>
+                        |
+                        <a class="inline" href="/bank/cash-deposit/" tabindex="-1">New</a>
+                    </li>
+
+                    <li>
+                        Cheque Deposit: <a class="inline" href="/bank/cheque-deposits/"
+                                           tabindex="-1">All</a> |
+                        <a class="inline" href="/bank/cheque-deposit/" tabindex="-1">New</a>
+                    </li>
+
+                    <li>
+                        Cheque Payment: <a class="inline" href="/bank/cheque-payments/"
+                                           tabindex="-1">All</a> |
+                        <a class="inline" href="/bank/cheque-payment/" tabindex="-1">New</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon account"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Accounts</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a href="/ledger" tabindex="-1">All Accounts</a>
+                    </li>
+
+                    <li>
+                        <a href="/ledger/create/" tabindex="-1">New Account</a>
+                    </li>
+
+                    <li>
+                        <a href="/ledger/categories/" tabindex="-1">Account Categories</a>
+                    </li>
+
+                    <li>
+                        <a href="/ledger/category/create/" tabindex="-1">Create New Category</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon inventory"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Inventory</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a href="/inventory/items/" tabindex="-1">All Items</a>
+                    </li>
+
+                    <li>
+                        <a href="/inventory/create/" tabindex="-1">New Item</a>
+                    </li>
+                    <li>
+                        <a href="/inventory/categories/" tabindex="-1">Inventory Categories</a>
+                    </li>
+
+                    <li>
+                        <a href="/inventory/category/create/" tabindex="-1">New Inventory Category</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon payroll"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Payroll</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a class="inline" href="/payroll/entries/" tabindex="-1">Payroll Entries
+                        </a>
+                    </li>
+                    <li>
+                        <a class="inline" href="/payroll/entry/" tabindex="-1">New Payroll Entry
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon report"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Reports</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a href="/report/trial-balance/" tabindex="-1">Trial Balance</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flip-container" ontouchstart="this.classList.toggle('hover');">
+            <div class="dashboard-icon-container">
+                <div class="dashboard-icon setting"></div>
+            </div>
+            <div class="flip-body">
+                <h2>Settings</h2>
+                <ul class="dashboard-flip-menu">
+                    <li>
+                        <a class="inline" href="/settings/company/" tabindex="-1">Company Settings
+                        </a>
+                    </li>
+                    <li>
+                        <a class="inline" href="/tax/schemes/" tabindex="-1">Tax Schemes
+                        </a>
+                    </li>
+                    <li>
+                        <a class="inline" href="/tax/scheme/create/" tabindex="-1">New Tax Scheme
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+    <!-- /shortcuts -->
+
+</div>
+</div>
+</div>
+
+
+<!--PAGE CONTENT ENDS HERE-->
+
+<!--/row-->
+</div>
+</div>
+<!--/#page-content-->
+
+
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ account.name }} Ledger View {% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li>Cash Book</li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ account.name }}</li>
+{% endblock %}
+
+{% block pageheader %}
+    {{ account.name }}
+{% endblock %}
+
+{% block extra-head %}
+    <script>
+        $(document).ready(function () {
+            if (window.location.hash) {
+                var hash = window.location.hash.substring(1);
+                $('#row-' + hash).addClass('highlighted');
+            }
+        });
+    </script>
+{% endblock %}
+{% load filters %}
+{% block content %}
+
+    <div class="clearfix">
+
+        <div class="pull-left">
+            Balance : {{ account.get_balance|dr_or_cr }} <br/>
+        </div>
+
+    </div>
+
+    <h2>Transactions:</h2>
+
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th class="span2">Date</th>
+        <th class="span4">Particulars</th>
+        <th class="span4">Description</th>
+        <th class="span2">VCH Type</th>
+        <th class="span2">VCH No.</th>
+        <th class="span2">Out</th>
+        <th class="span2">In</th>
+        <th class="span2">Balance</th>
+        </thead>
+        <tbody>
+        {% for entry in journal_entries %}
+            <tr id="row-{{ entry.id }}">
+                <td class="span2">
+                    {{ entry.date }}
+                </td>
+                <td class="span4">
+                    {% if entry.content_type.name == 'journal voucher row' %}
+                        {{ entry|get_particulars:account|safe }}
+                    {% else %}
+                        {% for transaction in entry.transactions.all|remove_account:account %}{% if not forloop.first %}
+                            ,
+                        {% endif %}
+                            <a href="{{ transaction.account.get_absolute_url }}{{ entry.id }}">{{ transaction.account.name }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td class="span4">
+                    {% if entry.content_type.app_label == 'dayjournal' %}
+                        {{''}}
+                    {% else %}
+                        {{ entry.source.get_voucher_description }}
+                    {% endif %}
+                </td>
+                <td class="span2">
+                    {% if entry.content_type.app_label == 'dayjournal' %}
+                        Day Journal
+                    {% else %}
+                        {{ entry.content_type.name|refine_voucher_type }}
+                    {% endif %}
+                </td>
+                <td class="span2">
+                    <a href="{{ entry.source.get_absolute_url }}">
+                        {% if entry.content_type.app_label == 'day_journal' %}
+                            {{ entry.source.get_voucher_no }}
+                        {% else %}
+                            {{ entry.source.get_voucher_no }}
+                        {% endif %}
+                    </a>
+                </td >
+
+                {% for transaction in entry.transactions.all %}
+                    {% if transaction.account.id == account.id %}
+                        <td class="span2">
+                            {{ transaction.dr_amount|if_not_none }}
+                        </td>
+                        <td class="span2">
+
+                            {{ transaction.cr_amount|if_not_none }}
+                        </td>
+                        <td class="span2">
+                            {{ transaction.get_balance|dr_or_cr }}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="5"><b>Total</b></td>
+            <td class="span2"><b>{{ account.current_dr }}</b></td>
+            <td class="span2"><b>{{ account.current_cr }}</b></td>
+            <td class="span2"><b>{{ account.get_balance|dr_or_cr }}</b></td>
+        </tr>
+        </tbody>
+    </table>
+
+{% endblock %}

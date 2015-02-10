@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Acubor</title>
+    <meta name="description" content="Acubor | Dashboard"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!--basic styles-->
+
+    <link href="css/vendors/bootstrap.min.css" rel="stylesheet"/>
+    <link href="css/vendors/bootstrap-responsive.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css"/>
+
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="css/font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+
+    <!--fonts-->
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"/>
+
+
+    <link rel="stylesheet" href="css/vendors/w8.min.css"/>
+    <link rel="stylesheet" href="css/vendors/w8-responsive.min.css"/>
+    <link rel="stylesheet" href="css/vendors/w8-skins.min.css"/>
+
+    <link href="css/styles.css" rel="stylesheet"/>
+</head>
+
+<body>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a href="#" class="brand">
+                <small>
+                    <i class="icon-desktop"></i>
+                    Acubor Application
+                </small>
+            </a><!--/.brand-->
+
+            <ul class="nav ace-nav pull-right">
+
+
+                <li class="light-blue user-profile">
+                    <a data-toggle="dropdown" href="#" class="user-menu dropdown-toggle">
+                        <img class="nav-user-photo" src="themes/images/user.png" alt="Jason's Photo"/>
+								<span id="user_info">
+									<small>Welcome,</small>
+									Jason
+								</span>
+
+                        <i class="icon-caret-down"></i>
+                    </a>
+
+                    <ul class="pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer" id="user_menu">
+                        <li>
+                            <a href="#">
+                                <i class="icon-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                <i class="icon-user"></i>
+                                Profile
+                            </a>
+                        </li>
+
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href="#">
+                                <i class="icon-off"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!--/.w8-nav-->
+        </div>
+        <!--/.container-fluid-->
+    </div>
+    <!--/.navbar-inner-->
+</div>
+
+<div class="container-fluid" id="main-container">
+<a id="menu-toggler" href="#">
+    <span></span>
+</a>
+
+<div id="sidebar">
+<div id="sidebar-shortcuts">
+    <div id="sidebar-shortcuts-large">
+        <button class="btn btn-small btn-success">
+            <i class="icon-signal"></i>
+        </button>
+
+        <button class="btn btn-small btn-info">
+            <i class="icon-pencil"></i>
+        </button>
+
+        <button class="btn btn-small btn-warning">
+            <i class="icon-group"></i>
+        </button>
+
+        <button class="btn btn-small btn-danger">
+            <i class="icon-cogs"></i>
+        </button>
+    </div>
+
+    <div id="sidebar-shortcuts-mini">
+        <span class="btn btn-success"></span>
+
+        <span class="btn btn-info"></span>
+
+        <span class="btn btn-warning"></span>
+
+        <span class="btn btn-danger"></span>
+    </div>
+</div>
+<!--#sidebar-shortcuts-->
+
+<ul class="nav nav-list">
+    <li class="active">
+        <a href="index.html">
+            <i class="icon-dashboard"></i>
+            <span>Income Bills</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="typography.html">
+            <i class="icon-text-width"></i>
+            <span>Expense Bills</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class="icon-desktop"></i>
+            <span>Transactions</span>
+
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul class="submenu">
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Bank Transactions
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Store Transactions
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Salary Transactions
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <a href="#">
+            <i class="icon-list"></i>
+            <span>Gas</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class="icon-edit"></i>
+            <span>Payments</span>
+
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul class="submenu">
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    To Pay
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    To Collect
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Wysiwyg &amp; Markdown
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <a href="#">
+            <i class="icon-list-alt"></i>
+            <span>Money Order</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#">
+            <i class="icon-calendar"></i>
+            <span>Food Coupons</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#">
+            <i class="icon-picture"></i>
+            <span>Groceries</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#">
+            <i class="icon-th"></i>
+            <span>Sales</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class="icon-file"></i>
+            <span>Other Pages</span>
+
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul class="submenu">
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Pricing Tables
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Invoice
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Login &amp; Register
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Error 404
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Error 500
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="icon-double-angle-right"></i>
+                    Blank Page
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+<!--/.nav-list-->
+
+<div id="sidebar-collapse">
+    <i class="icon-double-angle-left"></i>
+</div>
+</div>
+
+<div id="main-content" class="clearfix">
+    <div id="breadcrumbs">
+        <ul class="breadcrumb">
+            <li>
+                <i class="icon-home"></i>
+                <a href="#">Home</a>
+
+							<span class="divider">
+								<i class="icon-angle-right"></i>
+							</span>
+            </li>
+            <li class="active">Dashboard</li>
+        </ul>
+        <!--.breadcrumb-->
+
+        <div id="nav-search">
+            <form class="form-search">
+							<span class="input-icon">
+								<input type="text" placeholder="Search ..." class="input-small search-query"
+                                       id="nav-search-input" autocomplete="off"/>
+								<i class="icon-search" id="nav-search-icon"></i>
+							</span>
+            </form>
+        </div>
+        <!--#nav-search-->
+    </div>
+
+    <div id="page-content" class="clearfix">
+        <div class="page-header position-relative">
+            <h1>
+                Dashboard
+            </h1>
+        </div>
+        <!--/.page-header-->
+
+        <div class="row-fluid">
+            <!--PAGE CONTENT BEGINS HERE-->
+
+            <div class="alert alert-block alert-success">
+                <button type="button" class="close" data-dismiss="alert">
+                    <i class="icon-remove"></i>
+                </button>
+                Some message for user they can see after login.
+            </div>
+
+            <div class="space-6"></div>
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="widget-content">
+
+                        <div class="shortcuts">
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-list-alt"></i>
+                                <span class="shortcut-label">Gas</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-bookmark"></i>
+                                <span class="shortcut-label">Delacy</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-signal"></i>
+                                <span class="shortcut-label">Lotto</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-comment"></i>
+                                <span class="shortcut-label">Grocery</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-user"></i>
+                                <span class="shortcut-label">Bank</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-file"></i>
+                                <span class="shortcut-label">Money Order</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-picture"></i>
+                                <span class="shortcut-label">Payroll</span>
+                            </a>
+
+                            <a href="javascript:;" class="shortcut">
+                                <i class="shortcut-icon icon-tag"></i>
+                                <span class="shortcut-label">ATM</span>
+                            </a>
+                        </div>
+                        <!-- /shortcuts -->
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!--PAGE CONTENT ENDS HERE-->
+        </div>
+        <!--/row-->
+    </div>
+    <!--/#page-content-->
+
+    <div id="ace-settings-container">
+        <div class="btn btn-app btn-mini btn-warning" id="ace-settings-btn">
+            <i class="icon-cog"></i>
+        </div>
+
+        <div id="ace-settings-box">
+            <div>
+                <div class="pull-left">
+                    <select id="skin-colorpicker" class="hidden">
+                        <option data-class="default" value="#438EB9">#438EB9</option>
+                        <option data-class="skin-1" value="#222A2D">#222A2D</option>
+                        <option data-class="skin-2" value="#C6487E">#C6487E</option>
+                        <option data-class="skin-3" value="#D0D0D0">#D0D0D0</option>
+                    </select>
+                </div>
+                <span>&nbsp; Choose Skin</span>
+            </div>
+
+            <div>
+                <input type="checkbox" class="ace-checkbox-2" id="ace-settings-header"/>
+                <label class="lbl" for="ace-settings-header"> Fixed Header</label>
+            </div>
+
+            <div>
+                <input type="checkbox" class="ace-checkbox-2" id="ace-settings-sidebar"/>
+                <label class="lbl" for="ace-settings-sidebar"> Fixed Sidebar</label>
+            </div>
+        </div>
+    </div>
+    <!--/#ace-settings-container-->
+</div>
+<!--/#main-content-->
+</div>
+<!--/.fluid-container#main-container-->
+
+<a href="#" id="btn-scroll-up" class="btn btn-small btn-inverse">
+    <i class="icon-double-angle-up icon-only bigger-110"></i>
+</a>
+
+<!--basic scripts-->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='js/vendors/jquery.min.js'>"+"<"+"/script>");
+
+</script>
+<script src="js/vendors/bootstrap.js"></script>
+<script src="js/vendors/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="js/vendors/jquery.ui.touch-punch.min.js"></script>
+
+<script src="js/vendors/jquery.slimscroll.min.js"></script>
+<script src="js/vendors/jquery.easy-pie-chart.min.js"></script>
+<script src="js/vendors/jquery.sparkline.min.js"></script>
+
+<script src="js/vendors/jquery.flot.min.js"></script>
+<script src="js/vendors/jquery.flot.pie.min.js"></script>
+<script src="js/vendors/jquery.flot.resize.min.js"></script>
+
+<!--w8 scripts-->
+
+<script src="js/vendors/w8-elements.min.js"></script>
+<script src="js/vendors/w8.min.js"></script>
+
+<!--inline scripts related to this page-->
+
+<script type="text/javascript">
+			$(function() {
+
+			});
+
+</script>
+</body>
+</html>

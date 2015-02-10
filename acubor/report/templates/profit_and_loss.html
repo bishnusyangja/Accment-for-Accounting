@@ -1,0 +1,137 @@
+{% extends "dashboard.html" %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+
+<li><a href="{% url "profit_and_loss" %}">Profit And Loss Statement</a></li>
+{% endblock %}
+
+{% block title %}Profit Or Loss Statement{% endblock %}
+
+{% block extra-head %}
+{% load filters %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/profit_and_loss.js"></script>
+{% endcompress %}
+<link href="{{ STATIC_URL }}css/vendors/jquery.treetable.css" rel="stylesheet" type="text/css"/>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/vendors/jquery.treetable.js"></script>
+<script>
+        $(document).ready(function () {
+                var vm = new ProfitAndLoss({{ dict|jsonify }});
+                ko.applyBindings(vm);
+            $(".tree-table").treetable({initialState: 'collapsed', clickableNodeNames: false, expandable: true });
+            $('.dateinput').datepicker({format:'mm/dd/yyyy'});
+            vm.expandRoot();
+        });
+
+
+</script>
+{% endcompress %}
+
+{% endblock %}
+
+{% block pageheader %}
+Profit And Loss Statement
+<br/>
+<h4>
+    for period {{' '}} {{dict.start}} to {{dict.end}}
+</h4>
+{% endblock %}
+
+{% block content %}
+
+
+<div>
+    <form action="" method="POST" class="non-printable"> {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-warning alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <strong>{{form.errors}}</strong>
+        </div>
+        {% endif %}
+
+        <div class="row-fluid">
+            <div class="pull-left">
+                {{ 'From: ' }} {{form.start_date}}
+            </div>
+            <div class="pull-right">
+                {{ 'To: ' }} {{form.end_date}}
+            </div>
+        </div>
+
+        <input type="submit"  class="btn btn-primary" value="See Results"/>
+    </form>
+</div>
+
+<script id="categories" type="text/html">
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}">
+        <td data-bind="style: { textAlign: (name == 'Sub Total' || name == 'Gross Profit') ? 'right' : 'none', fontWeight: (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 1001) ? '900' : '400'}, text: name"></td>
+        <td style="text-align:right;border-right:none;border-left:none;"
+            data-bind="style: {fontWeight: (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 1001) ? '900' : '400', borderTopWidth: ((name == 'Sub Total' || name == 'Gross Profit') && (net_amount)) ? 'thick' : 'thin'},html: neg(zero_to_dash(znum(fnum(rnum(net_amount())))))||''"></td>
+        <td style="text-align:right;border-left:none;"
+            data-bind="html: neg(zero_to_dash(znum(fnum(rnum(pct_of_revenue())))) + ((zero_to_dash(znum(fnum(rnum(pct_of_revenue())))) == '-')? '':'%'))||'', style: {fontWeight: (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 1001) ? '900' : '400'}"></td>
+    </tr>
+    <!-- ko foreach: accounts -->
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}">
+        <td><a data-bind="text: name, attr: { href: link }"></a></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;border-right:none;border-left:none"
+            data-bind="html: neg(zero_to_dash(znum(fnum(rnum(net_amount())))))||''"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;border-left:none"
+            data-bind="html: neg(zero_to_dash(znum(fnum(rnum(pct_of_revenue())))) + ((zero_to_dash(znum(fnum(rnum(pct_of_revenue())))) == '-')? '':'%'))||''"></td>
+    </tr>
+    <!-- /ko -->
+
+    <!-- ko template: { name: 'categories',
+                            foreach: categories } -->
+    <!-- /ko -->
+
+</script>
+
+
+<div class="controls non-printable">
+    <a onclick="$('.tree-table').treetable('expandAll'); return false;">Expand all</a>
+    <a data-bind="click: expandRoot">Expand Base Accounts</a>
+    <a onclick="$('.tree-table').treetable('collapseAll'); return false;">Collapse all</a>
+</div>
+<div class="printable">
+<table class="table table-bordered table-striped table-acubor table-sortable tree-table">
+    <thead>
+    <tr>
+        <th class="span5" style="border-right:none;text-align:center;">Particulars</th>
+        <th class="span2" style="text-align:center;border-right:none;border-left:none;">Amount</th>
+        <th class="span1" style="text-align:center;border-left:none;">Pct of Revenue</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <!-- ko template: { name: 'categories',
+                            foreach: categories } -->
+    <!-- /ko -->
+    <tr>
+        <td style="border-right:none;text-align:right;font-weight:bold;">Net Profit</td>
+        <td id="check"
+            style="border-right:none;border-left:none;text-align:right;font-weight:bold;border-top-width:thick;"
+            data-bind="html:neg(znum(fnum(rnum(net_profit))))||''"></td>
+        <td style="border-left:none;text-align:right;font-weight:bold;"
+            data-bind="html: neg(zero_to_dash(znum(fnum(rnum(net_profit_pct)))) + ((zero_to_dash(znum(fnum(rnum(net_profit_pct)))) == '-')? '':'%')||'')"></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+<br />
+<style type="text/css">
+    @media print
+    {
+    	.non-printable { display: none; }
+    	.printable { display: block; }
+        a[href]:after {
+            content: none !important;
+        }
+    }
+</style>
+
+{% endblock %}

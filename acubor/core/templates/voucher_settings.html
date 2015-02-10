@@ -1,0 +1,38 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Voucher Settings{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "voucher_settings" %}">Voucher Settings</a></li>
+{% endblock %}
+
+
+{% block pageheader %}
+Voucher Settings
+{% endblock %}
+
+{% load filters %}
+
+
+{% block content %}
+
+<form method="post" action="" id="voucher_settings" class="col_3_form">{% csrf_token %}
+
+    {% for field in form %}
+    <div class="control-group">
+        <label class="control-label">{{ field.label }}</label>
+
+        <div class="controls">{{ field }}
+            {% if field.help_text %}
+            <p class="help-inline">
+                <small>{{ field.help_text }}</small>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    <p><input type="submit" value="Submit" class="btn"/></p>
+</form>
+
+{% endblock %}

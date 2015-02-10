@@ -1,0 +1,84 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Purchase Register{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "all_purchase_vouchers" %}">Purchase Register</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Purchase Register
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+
+<div class="widget-box collapsed">
+    <div class="widget-header">
+        <div class="widget-toolbar">
+            <a href="#" data-action="collapse">
+                <i class="icon-chevron-up"></i>
+            </a>
+        </div>
+        <h4>Search</h4>
+    </div>
+    <div class="widget-body">
+        <div class="widget-body-inner">
+            <div class="widget-main">
+                <br>
+
+                <form action="" method="get">
+                    {{ objects.form.as_p }}
+                    <input type="submit" value="Search" class="btn"/>
+                </form>
+            </div>
+            <!-- /widget-main -->
+        </div>
+    </div>
+    <!-- /widget-body -->
+</div>
+<br>
+{% autosort objects.qs as sorted_objects %}
+{% autopaginate sorted_objects 25 as paginated_objects %}
+
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>{% anchor reference 'Vendor Invoice No.' %}</th>
+    <th>{% anchor party 'From' %}</th>
+    <th>{% anchor date 'Date' %}</th>
+    <th>{% anchor due_date 'Due Date' %}</th>
+    <th>{% anchor total_amount 'Amount' %}</th>
+    <th>{% anchor pending_amount 'Pending Amount' %}</th>
+    <th>{% anchor description 'Description' %}</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    {% for item in paginated_objects %}
+    <tr>
+        <td>
+            {{ item.reference }}
+        </td>
+        <td>{{ item.party }}</td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.due_date }}</td>
+        <td>{{ item.total_amount }}</td>
+        <td>{{ item.pending_amount }}</td>
+        <td>{{ item.description }}</td>
+        <td><a href="{% url "view_purchase_voucher" item.id %}">
+            Edit
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% paginate %}
+
+<a class="btn" href="{% url 'new_purchase_voucher' %}">New Purchase Voucher</a>
+
+
+{% endblock %}

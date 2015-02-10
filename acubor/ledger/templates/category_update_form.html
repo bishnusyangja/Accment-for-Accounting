@@ -1,0 +1,32 @@
+{% extends base_template %}
+
+{% block title %} Update Category {% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_category" %}">Categories</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li>Update Category</li>
+{% endblock %}
+
+{% block pageheader %}
+Update Category
+{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <div class="row">
+
+        <input type="submit" value="Submit" class="btn"/>
+        <a class="btn btn-danger" href="{% url 'delete_category' form.instance.id %}">Delete this category!</a>
+
+    </div>
+
+
+</form>
+
+{% endblock %}

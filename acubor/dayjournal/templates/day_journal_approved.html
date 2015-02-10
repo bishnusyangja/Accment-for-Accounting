@@ -1,0 +1,1505 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Day Journal for {{ day_journal.date }}{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "new_day_journal" %}">Day Journal</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Day Journal for {{ day_journal.date }}
+{% endblock %}
+
+
+{% block extra-head %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/day_journal.js"></script>
+{% load filters %}
+<script type="text/javascript">
+        ko_data = {{ day_journal|jsonify }};
+
+        $(document).ready(function () {
+            $('.tab-trigger').on('click', function () {
+                var open_id = $(this).data('open-id');
+                var target = $(this).attr('href');
+                var ahref = $('a[href="' + target + '"]').filter(function () {
+                    return $(this).data('toggle') == 'tab';
+                });
+                var col_head = false;
+                var el = ahref;
+                if (open_id) {
+                    col_body = $('#' + open_id).find('.col-box-body');
+                    if (col_body.length > 0) {
+                        col_body.slideDown();
+                        el = col_body.siblings('.col-box-header');
+                    }
+                }
+                $('html, body').stop().animate({
+                    'scrollTop': el.offset().top
+                }, 900, 'swing', function () {
+                    window.location.hash = target;
+                });
+                $(ahref).tab('show');
+
+            });
+        });
+
+</script>
+{% endblock %}
+
+{% block controls %}
+<!-- Button to trigger modal -->
+<a href="#print-preview" data-toggle="modal"><i class="icon-print"></i> Print</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Modal -->
+<div id="print-preview" class="modal hide fade do-print" tabindex="-1" role="dialog" aria-labelledby="modal-label"
+     aria-hidden="true">
+<div class="modal-header no-print">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="modal-label">Print Preview</h3>
+</div>
+<div class="modal-body">
+<h2>{{ request.user.currently_activated_company }}<br/> Day Journal for {{ day_journal.date|date:"m-d-Y" }}<br/> Voucher No: <span
+        data-bind="text: voucher_no()"></span></h2>
+
+<div class="print-wrap">
+<div class="print-half">
+    <!-- Sales -->
+    <div data-bind="with: cash_sales, visible: cash_sales.has_real_rows('account_id')">
+        <h2>Sales</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Sales Ledger</th>
+                <th class="span2">Amount</th>
+                <th class="span2">Tax</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <!-- ko foreach: rows -->
+            <!-- ko if:account_id -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td data-bind="text: $root.account_by_id(account_id()).name">
+                </td>
+                <td style="text-align:right;" class="change-on-ready" data-bind="text: fnum(amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(tax())"></td>
+
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right;" data-bind="text: fnum(get_total('amount'))"></td>
+                <td style="text-align:right;" colspan="2" data-bind="text: fnum(get_total('tax'))"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Lotto/Scratch-Off Sales -->
+    <div>
+        <h2>Lotto/Scratch-Off Sales</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Amount</th>
+                <th>Tax</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th>Lotto Sales as per Dispenser</th>
+                <td style="text-align:right;" data-bind="text: fnum(lotto_sales_dispenser_amount())"
+                    class="change-on-ready"></td>
+                <td style="text-align:right;" data-bind="text: fnum($root.lotto_sales_dispenser_tax())"></td>
+            </tr>
+            <tr>
+                <th>Scratch Off Sales as per Dispenser</th>
+                <td style="text-align:right;" data-bind="text: fnum($root.scratch_off_total())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(scratch_off_sales_dispenser_tax())"></td>
+            </tr>
+            <tr>
+                <th>Lotto Sales as per Register</th>
+                <td style="text-align:right;" data-bind="text: fnum(lotto_sales_register_amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum($root.lotto_sales_register_tax())"></td>
+            </tr>
+            <tr>
+                <th>Scratch Off Sales as per Register</th>
+                <td style="text-align:right;" data-bind="text: fnum(scratch_off_sales_register_amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum($root.scratch_off_sales_register_tax())"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Transfer/Remittance -->
+    <div data-bind="with: summary_transfer, visible: summary_transfer.has_real_rows('transfer_type')">
+        <h2>Transfer/Remittance</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th>SN</th>
+                <th>Transfer Type</th>
+                <th>Cash</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- ko foreach: rows -->
+            <!-- ko if: transfer_type -->
+            <tr data-bind="flash: true">
+                <td data-bind="text: $index()+1"></td>
+                <td data-bind="text: $root.account_by_id(transfer_type()).name">
+                </td>
+                <td style="text-align:right;" data-bind="text: fnum(cash())"></td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right;" data-bind="text: fnum(get_total('cash'))"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sales Summary -->
+    <div>
+        <h2>Sales Summary</h2>
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Amount</th>
+                <th>Tax</th>
+            </tr>
+            </thead>
+            <tr>
+                <th>Actual Sales</th>
+                <td style="text-align:right;" data-bind="text: fnum(actual_sales_amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(actual_sales_tax())"></td>
+            </tr>
+            <tr>
+                <th>Sales shown by Register</th>
+                <td style="text-align:right;" data-bind="text: fnum(register_sales_amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(register_sales_tax())"></td>
+            </tr>
+            <tr class="diff">
+                <th>Difference</th>
+                <td style="text-align:right;" data-bind="text: fnum(diff_sales_amount())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(diff_sales_tax())"></td>
+                <td style="text-align:right;" data-bind="text: fnum(diff_sales_tax())"></td>
+            </tr>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cash Summary -->
+    <div data-bind="with: summary_cash">
+        <h2>Cash Summary</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th class="span2">Opening</th>
+                <th class="span2">Inward</th>
+                <th class="span2">Outward</th>
+                <th class="span2">Closing</th>
+                <th class="span2">Actual</th>
+                <th class="span2">Difference</th>
+            </tr>
+            </thead>
+            <tbody id="summary-cash">
+            <tr>
+                <td data-bind="text: fnum(rows()[0].opening($root))"></td>
+                <td data-bind="text: fnum(rows()[0].inward($root))"></td>
+                <td data-bind="text: fnum(rows()[0].outward($root))"></td>
+                <td data-bind="text: fnum(rows()[0].closing($root))"></td>
+                <td data-bind="text: fnum(rows()[0].actual())"></td>
+                <td data-bind="text: fnum(rows()[0].difference($root))"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Fuel -->
+    <div data-bind="with: inventory_fuel, visible: inventory_fuel.has_real_rows('account_id')">
+        <h2>Fuel</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th>SN</th>
+                <th>Particulars</th>
+                <th>Opening</th>
+                <th>Purchase</th>
+                <th>Sales</th>
+                <th>Closing</th>
+                <th>Actual</th>
+                <th>Difference</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- ko foreach: rows -->
+            <!-- ko if: account_id -->
+            <tr data-bind="flash: true">
+                <td data-bind="text: $index()+1"></td>
+                <td data-bind="text: $root.inventory_account_by_id(account_id()).name"></td>
+                <td data-bind="text: fnum(opening()) + ' ' + $root.get_unit(account_id())"></td>
+                <td data-bind="text: fnum(purchase()) + ' ' + $root.get_unit(account_id())"></td>
+                <td data-bind="text: fnum(sales()) + ' ' + $root.get_unit(account_id())"></td>
+                <td data-bind="text: fnum(closing()) + ' ' + $root.get_unit(account_id())"></td>
+                <td data-bind="text: fnum(actual()) + ' ' + $root.get_unit(account_id())"></td>
+                <td data-bind="text: fnum(difference()) + ' ' + $root.get_unit(account_id())"></td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="print-half print-half-last">
+
+    <!-- Sales Against -->
+    <div>
+        <h2>Sales Against</h2>
+        <table class="table table-bordered table-acubor">
+            <tr>
+                <th>Card</th>
+                <td data-bind="text: fnum($root.card_sales.rows()[0].amount())"></td>
+            </tr>
+            <tr>
+                <td>Card Commission Out</td>
+                <td data-bind="text: fnum($root.card_sales.rows()[0].commission_out())"></td>
+            </tr>
+            <!-- ko foreach:$root.cash_equivalent_sales.rows() -->
+            <!-- ko if:account -->
+            <tr>
+                <th data-bind="text: $root.account_by_id(account()).name"></th>
+                <td data-bind="text: fnum(amount())"></td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <tr>
+                <th>Cash</th>
+                <td data-bind="text: fnum($root.sales_summary_cash())"></td>
+            </tr>
+            <tr>
+                <th>TOTAL</th>
+                <td data-bind="text: fnum($root.actual_sales_amount())"></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Vendor Payouts -->
+    <div data-bind="with: vendor_payout, visible: vendor_payout.has_real_rows('vendor')">
+        <h2>Vendor Payouts</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Vendor</th>
+                <th class="span2">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- ko foreach: rows -->
+            <!-- ko if:vendor -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td data-bind="text: $root.account_by_id(vendor()).name"></td>
+                <td data-bind="text: fnum(amount())"></td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td colspan="2"><b>TOTAL</b></td>
+                <td colspan="6" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Other Payout -->
+    <div data-bind="with: other_payout, visible: other_payout.has_real_rows('paid_to')">
+        <h2>Other Payout</h2>
+        <table class="table table-bordered table-acubor">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Paid To</th>
+                <th class="span2">Amount</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <!-- ko foreach: rows -->
+            <!-- ko if:paid_to -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td data-bind="text: $root.account_by_id(paid_to()).name"></td>
+                <td data-bind="text: fnum(amount())"></td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td colspan="2"><b>TOTAL</b></td>
+                <td colspan="4" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</div>
+<div class="page-break"></div>
+<div class="print-wrap">
+    <div class="print-half">
+        <h2 data-bind="visible: lotto_detail.has_real_rows('rate')">{{ request.user.currently_activated_company }}<br/> Day Journal for {{
+            day_journal.date }}<br/> Voucher No: <span data-bind="text: voucher_no()"></span></h2>
+        <!-- Scratch Off -->
+        <div data-bind="with: lotto_detail, visible: lotto_detail.has_real_rows('rate')">
+            <h2>Scratch Off</h2>
+            <table class="table table-bordered table-acubor">
+                <thead>
+                <tr>
+                    <th width="6%">SN</th>
+                    <th width="12%">Rate (in $)</th>
+                    <th width="20%">Pack Count</th>
+                    <th width="12%">Day Open</th>
+                    <th width="12%">Day Close</th>
+                    <th width="12%">Addition</th>
+                    <th width="20%">Sales ($)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- ko foreach: rows -->
+                <tr data-bind="flash: true">
+                    <td data-bind="text: $index()+1"></td>
+                    <td data-bind="text: fnum(rate())"></td>
+                    <td data-bind="text: fnum(pack_count())"></td>
+                    <td data-bind="text: fnum(day_open())"></td>
+                    <td data-bind="text: fnum(day_close())"></td>
+                    <td data-bind="text: fnum(addition())"></td>
+                    <td data-bind="text: fnum(sales())"></td>
+                </tr>
+                <!-- /ko -->
+                <tr class="dont-validate">
+                    <td colspan="6"><b>TOTAL</b></td>
+                    <td colspan="3" data-bind="text: fnum(get_total('sales'))"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div data-bind="visible: scratch_off_sales_manual()">
+                <b>Manual</b>:
+                <span data-bind="text: fnum(scratch_off_sales_manual()) , numeric:true"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="page-break"></div>
+<div class="print-wrap">
+    <div class="print-half">
+        <h2 data-bind="visible: summary_inventory.has_real_rows('account_id')">{{ request.user.currently_activated_company }}<br/> Day Journal
+            for {{ day_journal.date }}<br/> Voucher No: <span data-bind="text: voucher_no()"></span></h2>
+        <!-- Other Inventories -->
+        <div class="row-fluid"
+             data-bind="with: summary_inventory, visible: summary_inventory.has_real_rows('account_id')">
+            <h2>Other Inventories</h2>
+            <table class="table table-bordered table-acubor">
+                <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Particulars</th>
+                    <th>Opening</th>
+                    <th>Purchase</th>
+                    <th>Sales</th>
+                    <th>Closing</th>
+                    <th>Actual</th>
+                    <th>Difference</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- ko foreach: rows -->
+                <!-- ko if: account_id -->
+                <tr data-bind="flash: true">
+                    <td data-bind="text: $index()+1"></td>
+                    <td data-bind="text: $root.inventory_account_by_id(account_id()).name"></td>
+                    <td data-bind="text: fnum(opening()) + ' ' + $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(purchase()) + ' ' + $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(sales()) + ' ' + $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(closing()) + ' ' + $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(actual()) + ' ' + $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(difference()) + ' ' + $root.get_unit(account_id())"></td>
+                </tr>
+                <!-- /ko -->
+                <!-- /ko -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+<div class="modal-footer no-print">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <a href="javascript:window.print();" class="btn btn-primary">Print</a>
+</div>
+</div>
+<div class="no-print">
+    Voucher No.: <input type="text" data-bind="value: voucher_no">
+</div>
+
+{% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+<a href="javascript:open_page()" class="btn btn-primary">Unapprove</a>
+<!--<button class="btn btn-primary" onclick=open_page()>Unapprove</button>-->
+<script type="text/javascript">
+        //console.log({{day_journal.date|jsonify}},typeof {{day_journal.date|jsonify}});
+            function open_page(){
+
+            window.location = "/day/unapprove/"+{{ day_journal.date|jsonify }};
+            return;
+            }
+
+</script>
+{% endifusergroup %}
+
+<div class="no-print page-journal">
+<div class="col-box" id="sales_col_box">
+<div class="col-box-header">
+    <a href="#">
+        <h3><i class="icon-money"></i> Sales <i class="icon-chevron-up pull-right status-handle"></i></h3>
+    </a>
+</div>
+<div class="col-box-body">
+<!-- Cash Tab -->
+<div class="tabbable">
+<ul class="nav nav-tabs" id="cash-tab">
+    <li class="active">
+        <a data-toggle="tab" href="#cash-sales">
+            Sales
+        </a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#summary-transfer">
+            Transfers/Remittance
+        </a>
+    </li>
+</ul>
+<div class="tab-content">
+
+<div id="cash-sales" class="tab-pane active">
+<div class="row-fluid" data-bind="with: cash_sales">
+    <table class="table table-bordered table-striped table-acubor table-sortable">
+        <thead>
+        <tr>
+            <th class="span1">SN</th>
+            <th class="span2">Sales Ledger</th>
+            <th class="span2">Amount</th>
+            <th class="span2">Tax</th>
+            <th class="span1"></th>
+        </tr>
+        </thead>
+
+        <tbody id="cash-sales">
+        <!-- ko foreach: rows -->
+        <tr data-bind="flash: true">
+            <td>
+                <span data-bind="text: $index()+1"> </span>
+            </td>
+            <td class="with_ip">
+                {# <select class="span12"#}
+                {# data-bind="options: $root.sales_sans_lotto(), optionsText: 'name', optionsValue: 'id', value:
+                account_id, optionsCaption: 'Choose an account..', select2: {placeholderOption: 'first'}, event:
+                {change: $root.account_changed}"></select>#}
+                <input type="hidden" data-url="{% url 'create_account' %}?category_id={{ sales_category.id }}"
+                       data-to="accounts" data-name="Sales Ledger"
+                       data-bind="value: account_id, select2: $root.sales_sans_lotto(), event: {change: $root.account_changed}">
+            </td>
+            <td><input target="inside_td" style="text-align:right" class="change-on-ready"
+                       data-bind="eval: amount, value: amount "/></td>
+            <td style="text-align:right" data-bind="text: znum(fnum(rnum(tax())))"></td>
+            <td align="center">
+                <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                    <i class="icon-trash"></i>
+                </button>
+            </td>
+        </tr>
+        <!-- /ko -->
+        <tr class="dont-validate">
+            <td colspan="2"><b>TOTAL</b></td>
+            <td style="text-align:right" data-bind="text: get_total('amount')"></td>
+            <td style="text-align:right" data-bind="text: get_total('tax')"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div data-bind="css: state()" class="pull-left">
+                                          <span data-bind="text: message(), css: state()">
+                                          </span>
+    </div>
+    <div class="pull-right">
+        <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i> Add
+            New Row
+        </button>
+        <button id="sales-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+        </button>
+
+    </div>
+</div>
+<br>
+
+<table class="table table-bordered table-striped table-acubor table-sortable">
+    <thead>
+    <tr>
+        <th></th>
+        <th>Amount</th>
+        <th>Tax</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <th>Lotto Sales as per Dispenser</th>
+        <td><input target="inside_td" style="text-align:right"
+                   data-bind="eval:lotto_sales_dispenser_amount, value: lotto_sales_dispenser_amount"
+                   class="change-on-ready"/></td>
+        <td style="text-align:right" data-bind="text: $root.lotto_sales_dispenser_tax()"></td>
+    </tr>
+    <tr>
+        <th>Scratch Off Sales as per Dispenser <a href="#lotto-detail" class="tab-trigger"
+                                                  data-open-id="inventory_col_box">[Enter Sales Detail]</a></th>
+        <td style="text-align:right" data-bind="text: fnum($root.scratch_off_total())"></td>
+        <td style="text-align:right" data-bind="text: fnum(scratch_off_sales_dispenser_tax())"></td>
+    </tr>
+    <tr>
+        <th>Lotto Sales as per Register</th>
+        <td><input target="inside_td" style="text-align:right"
+                   data-bind="eval: lotto_sales_register_amount, value: lotto_sales_register_amount "/></td>
+        <td style="text-align:right" data-bind="text: fnum($root.lotto_sales_register_tax())"></td>
+    </tr>
+    <tr>
+        <th>Scratch Off Sales as per Register</th>
+        <td><input target="inside_td" style="text-align:right"
+                   data-bind="eval: scratch_off_sales_register_amount,value: scratch_off_sales_register_amount "/></td>
+        <td style="text-align:right" data-bind="text: fnum($root.scratch_off_sales_register_tax())"></td>
+    </tr>
+    </tbody>
+</table>
+<span id="lotto-sales-message"></span>
+<button id="lotto-sales-as-per-dispenser" class="btn btn-small pull-right"
+        data-bind="click: save_lotto_sales_as_per_dispenser"><i
+        class="icon-save"></i> Save
+</button>
+<br><br>
+<table class="table table-bordered table-striped table-acubor table-sortable">
+    <thead>
+    <tr>
+        <th></th>
+        <th>Amount</th>
+        <th>Tax</th>
+    </tr>
+    </thead>
+    <tr>
+        <th>Actual Sales</th>
+        <td style="text-align:right" data-bind="text: fnum(actual_sales_amount())"></td>
+        <td style="text-align:right" data-bind="text: fnum(actual_sales_tax())"></td>
+    </tr>
+    <tr>
+        <th>Sales shown by Register</th>
+        <td><input target="inside_td" style="text-align:right"
+                   data-bind="eval: register_sales_amount,value: register_sales_amount"/></td>
+        <td><input target="inside_td" style="text-align:right"
+                   data-bind="eval: register_sales_tax,value: register_sales_tax"/></td>
+    </tr>
+    <tr class="diff">
+        <th>Difference</th>
+        <td style="text-align:right" data-bind="text: fnum(diff_sales_amount())"></td>
+        <td style="text-align:right" data-bind="text: fnum(diff_sales_tax())"></td>
+    </tr>
+    <tbody>
+
+    </tbody>
+
+</table>
+
+<span id="sales-register-message"></span>
+
+<button id="summary-sales-tax-save" class="btn btn-small pull-right" data-bind="click: save_sales_register">
+    <i class="icon-save"></i> Save
+</button>
+
+<h3>Sales through Cards</h3>
+
+<div class="row-fluid" data-bind="with: card_sales">
+    <table class="table table-bordered table-striped table-acubor table-sortable">
+        <thead>
+        <tr>
+            <th class="span2">Amount</th>
+            <th class="span2">Commission Out</th>
+            <th class="span2">Net</th>
+        </tr>
+        </thead>
+
+        <tbody id="card-sales">
+        <!-- ko foreach: rows -->
+        <tr>
+            <td><input target="inside_td" style="text-align:right" data-bind="eval: amount, value: amount "/></td>
+            <td><input target="inside_td" style="text-align:right"
+                       data-bind="eval: commission_out,value: commission_out"/></td>
+            <td style="text-align:right" data-bind="text: fnum(rnum(net()))"></td>
+        </tr>
+        <!-- /ko -->
+        </tbody>
+    </table>
+    <div data-bind="css: state" class="pull-left">
+                                    <span data-bind="text: message(), css: state">
+                                    </span>
+    </div>
+    <div class="pull-right">
+        <button id="card-sales-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+        </button>
+    </div>
+</div>
+
+<h3>Sales through Others</h3>
+
+<div class="row-fluid" data-bind="with: cash_equivalent_sales">
+    <table class="table table-bordered table-striped table-acubor table-sortable">
+        <thead>
+        <tr>
+            <th>SN</th>
+            <th>Particular</th>
+            <th>Amount</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody id='cash-equivalent-sales'>
+        <!-- ko foreach: rows -->
+        <tr data-bind="flash: true">
+            <td data-bind="text: $index()+1"></td>
+            <td class="with_ip">
+                <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                       data-bind="value: account, select2: $root.accounts_by_category('Cash Equivalent Account')">
+            </td>
+            <td><input target="inside_td" style="text-align:right" data-bind="eval: amount,value: amount "/></td>
+            <td>
+                <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i
+                        class="icon-trash"></i>
+                </button>
+            </td>
+        </tr>
+        <!-- /ko -->
+        <tr class="dont-validate">
+            <td colspan="2" style="text-align:center"><b>TOTAL</b></td>
+
+            <td style="text-align:right" data-bind="text: fnum(get_total('amount'))"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div data-bind="css: state()" class="pull-left">
+                                <span data-bind="text: message()">
+                                </span>
+    </div>
+    <div class="pull-right">
+        <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+            Add New Row
+        </button>
+        <button id="cash_equivalent_sales-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i>
+            Save
+        </button>
+    </div>
+</div>
+
+</div>
+
+<div id="summary-transfer" class="tab-pane">
+    <div class="row-fluid" data-bind="with: summary_transfer">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th>SN</th>
+                <th>Transfer Type</th>
+                <th>Cash</th>
+                <th>Commission</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody id="summary-transfer">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td data-bind="text: $index()+1"></td>
+                <td class="with_ip">
+                    <input type="hidden"
+                           data-url="{% url 'create_account' %}?category_id={{ transfer_category.id }}"
+                           data-to="accounts"
+                           data-bind="value: transfer_type, select2: $root.accounts_by_category('Transfer and Remittance')">
+                </td>
+                <td><input target="inside_td" style="text-align:right" data-bind="eval: cash, value: cash "/></td>
+                <td><input target="inside_td" style="text-align:right"
+                           data-bind="eval: commission, value: commission "/></td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td style="text-align:center" colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('cash'))"></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('commission'))"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div data-bind="css: state()" class="pull-left">
+                                          <span data-bind="text: message()">
+                                          </span>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i> Add
+                New Row
+            </button>
+            <button id="summary-transfer-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i>
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<!-- EOF Cash Tab -->
+</div>
+</div>
+<br>
+
+<div class="col-box" id="payout_col_box">
+<div class="col-box-header">
+    <a href="#">
+        <h3><i class="icon-retweet"></i> Payouts <i class="icon-chevron-up pull-right status-handle"></i></h3>
+    </a>
+</div>
+<div class="col-box-body">
+<div class="tabbable">
+<ul class="nav nav-tabs" id="credit-tab">
+    <li class="active">
+        <a data-toggle="tab" href="#cash-purchase">
+            Vendor Payouts
+        </a>
+    </li>
+
+    <li>
+        <a data-toggle="tab" href="#cash-payment">
+            Other Payouts
+        </a>
+    </li>
+
+    <li>
+        <a data-toggle="tab" href="#vendor-charge">
+            Vendor Charge
+        </a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#deposits">
+            Deposits
+        </a>
+    </li>
+</ul>
+<div class="tab-content">
+<div id="cash-purchase" class="tab-pane active">
+    <div class="row-fluid" data-bind="with: vendor_payout">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Vendor</th>
+                <th class="span2">Amount</th>
+                <th class="span2">Purchase Ledger</th>
+                <th class="span2">Remarks</th>
+                <th class="span2">Paid</th>
+                <th class="span2">Type</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+            <tbody id="vendor-payout">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_vendor_account' %}"
+                           data-to="accounts"
+                           data-bind="value: vendor, select2: $root.accounts_by_category('Suppliers')">
+                </td>
+                <td><input target="inside_td" style="text-align:right" data-bind="eval: amount,value: amount"/></td>
+                <td class="with_ip">
+                    <input type="hidden"
+                           data-url="{% url 'create_account' %}?category_id={{ purchase_category.id }}"
+                           data-to="accounts"
+                           data-bind="value: purchase_ledger, select2: $root.accounts_by_category('Purchase')">
+                </td>
+                <td><input target="inside_td" data-bind="value: remarks"/></td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                           data-bind="value: paid, select2: $root.accounts_by_category(['Cash Account', 'Bank Account', 'Cash Equivalent Account'], true)">
+                </td>
+                <td class="with_ip">
+                    <select data-bind="options: types, optionsText:'name', optionsValue: 'id', value: type">
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td style="text-align:center" colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div data-bind="css: state()" class="pull-left">
+                                          <span data-bind="text: message()">
+                                          </span>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                Add New Row
+            </button>
+            <button id="vendor-payout-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+<div id="cash-payment" class="tab-pane">
+    <div class="row-fluid" data-bind="with: other_payout">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Paid To</th>
+                <th class="span2">Amount</th>
+                <th class="span2">Remarks</th>
+                <th class="span2">Paid</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+
+            <tbody id="cash-payment">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                           data-bind="value: paid_to, select2: $root.accounts_except_category(['Sales', 'Purchase', 'Cash Account', 'Cash Equivalent Account', 'Bank Account', 'Suppliers'], true)">
+                </td>
+                <td><input target="inside_td" style="text-align:right" data-bind="eval: amount, value: amount "/></td>
+                <td><input target="inside_td" data-bind="value: remarks"/></td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                           data-bind="value: paid, select2: $root.accounts_by_category(['Cash Account', 'Bank Account', 'Cash Equivalent Account'], true)">
+                </td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td style="text-align:center" colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div data-bind="css: state()" class="pull-left">
+                                      <span data-bind="text: message()">
+                                      </span>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                Add New Row
+            </button>
+            <button id="other-payout-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+<div id="vendor-charge" class="tab-pane">
+    <div class="row-fluid" data-bind="with: vendor_charge">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Vendor</th>
+                <th class="span2">Amount</th>
+                <th class="span2">Purchase Ledger</th>
+                <th class="span2">Remarks</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+            <tbody id="vendor-charge">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_vendor_account' %}"
+                           data-to="accounts"
+                           data-bind="value: vendor, select2: $root.accounts_by_category('Suppliers')">
+                </td>
+                <td><input target="inside_td" style="text-align:right" data-bind="eval: amount,value: amount"/></td>
+                <td class="with_ip">
+                    <input type="hidden"
+                           data-url="{% url 'create_account' %}?category_id={{ purchase_category.id }}"
+                           data-to="accounts"
+                           data-bind="value: purchase_ledger, select2: $root.accounts_by_category('Purchase')">
+                </td>
+                <td><input target="inside_td" data-bind="value: remarks"/></td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td style="text-align:center" colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div data-bind="css: state()" class="pull-left">
+                                      <span data-bind="text: message()">
+                                      </span>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                Add New Row
+            </button>
+            <button id="vendor-charge-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="deposits" class="tab-pane">
+    <div class="row-fluid" data-bind="with: deposits">
+        <table class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th class="span1">SN</th>
+                <th class="span2">Deposit In</th>
+                <th class="span2">Amount</th>
+                <th class="span2">Deposit From</th>
+                <th class="span2">Remarks</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+            <tbody id="deposits">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <span data-bind="text: $index()+1"> </span>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_bank_account' %}"
+                           data-to="accounts"
+                           data-bind="value: deposit_in, select2: $root.accounts_by_category('Bank Account')">
+                </td>
+                <td><input target="inside_td" style="text-align:right" data-bind="eval: amount,value: amount"/></td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_account' %}"
+                           data-to="accounts"
+                           data-bind="value: deposit_from, select2: $root.accounts_by_category_list(['Bank Account', 'Cash Account', 'Cash Equivalent Account'])">
+                </td>
+                <td><input target="inside_td" data-bind="value: remarks"/></td>
+                <td>
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr class="dont-validate">
+                <td style="text-align:center" colspan="2"><b>TOTAL</b></td>
+                <td style="text-align:right" data-bind="text: fnum(get_total('amount'))"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div data-bind="css: state()" class="pull-left">
+                                      <span data-bind="text: message()">
+                                      </span>
+        </div>
+        <div class="pull-right">
+            <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                Add New Row
+            </button>
+            <button id="deposits-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+
+
+</div>
+</div>
+</div>
+</div>
+<br>
+
+<div class="col-box" id="inventory_col_box">
+<div class="col-box-header">
+    <a href="#">
+        <h3><i class="icon-briefcase"></i> Inventories <i class="icon-chevron-up pull-right status-handle"></i>
+        </h3>
+    </a>
+</div>
+<div class="col-box-body">
+<!-- Inventory Tabs -->
+<div class="tabbable">
+<ul class="nav nav-tabs" id="inventory_tab">
+    <li class="active">
+        <a data-toggle="tab" href="#inventory-fuel-tab">
+            Fuel
+        </a>
+    </li>
+
+    <li>
+        <a data-toggle="tab" href="#summary-invent">
+            Other Inventories
+        </a>
+    </li>
+
+    <li>
+        <a data-toggle="tab" href="#lotto-detail">
+            Scratch Off
+        </a>
+    </li>
+
+</ul>
+<div class="tab-content">
+
+    <div id="inventory-fuel-tab" class="tab-pane active">
+        <div class="row-fluid" data-bind="with: inventory_fuel">
+            <table class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Particulars</th>
+                    <th>Unit</th>
+                    <th>Opening</th>
+                    <th>Purchase</th>
+                    <th>Sales</th>
+                    <th>Closing</th>
+                    <th>Actual</th>
+                    <th>Difference</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="inventory-fuel">
+
+                <!-- ko foreach: rows -->
+                <tr data-bind="flash: true">
+                    <td data-bind="text: $index()+1"></td>
+                    <td class="with_ip">
+                        <input type="hidden" data-name="Fuel and Gas Item" data-to="inventory_accounts"
+                               class="change-on-ready"
+                               data-url="{% url 'create_inventory_item_returning_account' %}?category_id={{ fuel_and_gas.id }}"
+                               data-bind="value: account_id, select2: $root.inventory_accounts_by_category('Fuel and Gas'), event:{change: $root.inventory_account_changed}">
+                    </td>
+                    <td data-bind="text: $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(opening())"></td>
+                    <td><input target="inside_td" data-bind="eval_for_fuels: purchase,value: purchase "/></td>
+                    <td><input target="inside_td" data-bind="eval_for_fuels: sales,value: sales "/></td>
+                    <td data-bind="text: fnum(closing())"></td>
+                    <td><input target="inside_td" data-bind=" eval_for_fuels: actual, value: actual"/></td>
+                    <td data-bind="text: fnum(difference())"></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i
+                                class="icon-trash"></i></button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                </tbody>
+            </table>
+            <div data-bind="css: state()" class="pull-left">
+                                        <span data-bind="text: message()">
+                                        </span>
+            </div>
+            <div class="pull-right">
+                <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                    Add New Row
+                </button>
+                <button id="inventory-fuel-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="summary-invent" class="tab-pane">
+        <div class="row-fluid" data-bind="with: summary_inventory">
+            <table class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Particulars</th>
+                    <th>Unit</th>
+                    <th>Opening</th>
+                    <th>Purchase</th>
+                    <th>Sales</th>
+                    <th>Closing</th>
+                    <th>Actual</th>
+                    <th>Difference</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="summary-inventory">
+
+                <!-- ko foreach: rows -->
+                <tr data-bind="flash: true">
+                    <td data-bind="text: $index()+1"></td>
+                    <td class="with_ip">
+                        <input type="hidden" data-name="Inventory Item" data-to="inventory_accounts"
+                               class="change-on-ready"
+                               data-url="{% url 'create_inventory_item_returning_account' %}"
+                               data-bind="value: account_id, select2: $root.inventory_accounts, event: {change: $root.inventory_account_changed}">
+                    </td>
+                    <td data-bind="text: $root.get_unit(account_id())"></td>
+                    <td data-bind="text: fnum(opening())"></td>
+                    <td><input target="inside_td" data-bind="eval_for_fuels: purchase,value: purchase"/></td>
+                    <td><input target="inside_td" data-bind=" eval_for_fuels: sales,value: sales"/></td>
+                    <td data-bind="text: fnum(closing())"></td>
+                    <td><input target="inside_td" data-bind=" eval_for_fuels: actual,value: actual"/></td>
+                    <td data-bind="text: fnum(difference())"></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i
+                                class="icon-trash"></i></button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                </tbody>
+            </table>
+            <div data-bind="css: state()" class="pull-left">
+                                        <span data-bind="text: message()">
+                                        </span>
+            </div>
+            <div class="pull-right">
+                <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                    Add New
+                    Row
+                </button>
+                <button id="summary-inventory-save" class="btn btn-small" data-bind="click: save"><i
+                        class="icon-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lotto-detail" class="tab-pane">
+        <div class="row-fluid myscroll" data-bind="with: lotto_detail">
+            <table id="lotto_fixed_header" class="table table-bordered table-striped table-acubor table-sortable"
+                   style="position: absolute; top: 0; width: 1126px">
+                <thead>
+                <tr>
+                    <th width="6%">SN</th>
+                    <th width="12%">Rate (in $)</th>
+                    <th width="20%">Pack Count</th>
+                    <th width="12%">Day Open</th>
+                    <th width="12%">Day Close</th>
+                    <th width="12%">Addition</th>
+                    <th width="20%">Sales ($)</th>
+                    <th width="6%"></th>
+                </tr>
+                </thead>
+            </table>
+            <table width="1125" id="lotto_table_full"
+                   class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th width="6%">SN</th>
+                    <th width="12%">Rate (in $)</th>
+                    <th width="20%">Pack Count</th>
+                    <th width="12%">Day Open</th>
+                    <th width="12%">Day Close</th>
+                    <th width="12%">Addition</th>
+                    <th width="20%">Sales ($)</th>
+                    <th width="6%"></th>
+                </tr>
+                </thead>
+
+                <tbody id="lotto-detail">
+                <!-- ko foreach: rows -->
+                <tr data-bind="flash: true">
+                    <td data-bind="text: $index()+1"></td>
+                    <td><input target="inside_td" data-bind="value: rate"/></td>
+                    <td><input target="inside_td" data-bind="value: pack_count"/></td>
+                    <td><input target="inside_td" data-bind="value: day_open"/></td>
+                    <td><input target="inside_td" data-bind="value: day_close"/></td>
+                    <td><input target="inside_td" data-bind="value: addition"/></td>
+                    <td data-bind="text: fnum(sales())"></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i
+                                class="icon-trash"></i></button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr class="dont-validate">
+                    <td colspan="6"><b>TOTAL</b></td>
+                    <td colspan="3" data-bind="text: get_total('sales')"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div data-bind="css: state()" class="pull-left">
+
+                                        <span data-bind="text: message()">
+                                        </span>
+            </div>
+            Manual: <input type="text" data-bind="value: scratch_off_sales_manual">
+
+            <div class="pull-right">
+                <button class="btn btn-small" data-bind="click: addRow"><i class="icon-plus-sign"></i>
+                    Add New
+                    Row
+                </button>
+                <button id="lotto_detail-save" class="btn btn-small" data-bind="click: save"><i class="icon-save"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+<!-- EOF Inventory Tabs -->
+</div>
+</div>
+
+<br>
+<br>
+<!-- Summary Tabs -->
+<div class="tabbable">
+    <ul class="nav nav-tabs" id="summary-tab">
+        <li class="active">
+            <a data-toggle="tab" href="#summary-cash">
+                Summary Cash
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+
+        <div id="summary-cash" class="tab-pane active">
+            <div class="row-fluid" data-bind="with: summary_cash">
+                <table class="table table-bordered table-striped table-acubor table-sortable">
+                    <thead>
+                    <tr>
+                        <th class="span2">Opening</th>
+                        <th class="span2">Inward</th>
+                        <th class="span2">Outward</th>
+                        <th class="span2">Closing</th>
+                        <th class="span2">Actual</th>
+                        <th class="span2">Difference</th>
+                    </tr>
+                    </thead>
+                    <tbody id="summary-cash">
+                    <tr>
+                        <td data-bind="text: fnum(rows()[0].opening($root))"></td>
+                        <td data-bind="text: fnum(rows()[0].inward($root))"></td>
+                        <td data-bind="text: fnum(rows()[0].outward($root))"></td>
+                        <td data-bind="text: fnum(rows()[0].closing($root))"></td>
+                        <td><input target="inside_td" data-bind="eval:rows()[0].actual, value: rows()[0].actual"/></td>
+                        <td data-bind="text: fnum(rows()[0].difference($root))"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div data-bind="css: state()" class="pull-left"><span data-bind="text: message()"></span></div>
+                <div class="pull-right">
+                    <button id="summary-cash-save" class="btn btn-small" data-bind="click: save"><i
+                            class="icon-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- EO Summary Tabs -->
+
+<!-- Attachment Tabs -->
+<div class="tabbable" id="attachment_tabbable" data-journal-day="{{ day_journal.date|date:"Y-m-d" }}">
+<ul class="nav nav-tabs" id="attachment-tab">
+    <li class="active">
+        <a data-toggle="tab" href="#sales_attach">Sales Attachments</a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#purchase_attach">Purchase Attachments</a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#bank_attach">Bank Attachments</a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#other_attach">Other Attachments</a>
+    </li>
+</ul>
+<div class="tab-content">
+    <div id="sales_attach" class="tab-pane active">
+        <form class="attachment-form" data-type="sales">
+            <div class="row-fluid">
+                {% for attachment in sales_attachments %}
+                <div class="span3">
+                    <a target="_blank"
+                       href="{{ MEDIA_URL }}{{ attachment.attachment }}">{{ attachment.description }}</a>
+                    <button class="close delete-attachment" data-type="sales" data-id="{{ attachment.id }}">
+                        <span class="icon-trash"></span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <hr>
+            <div class="attach_file_field">
+                <label>
+                    <b>Add File: </b>
+                    <input type="file" name="attachments" required class="attachments"/>
+                </label>
+                <label>
+                    <b>Description: </b>
+                    <input type="text" name="captions" required class="captions">
+                </label>
+            </div>
+
+            <p><br><input type="button" class="btn add_file" value="Add Another File"/> <input type="submit"
+                                                                                               value="Save"
+                                                                                               class="btn"/></p>
+        </form>
+    </div>
+    <div id="purchase_attach" class="tab-pane">
+        <form class="attachment-form" data-type="purchase">
+            <div class="row-fluid">
+                {% for attachment in purchase_attachments %}
+                <div class="span3">
+                    <a target="_blank"
+                       href="{{ MEDIA_URL }}{{ attachment.attachment }}">{{ attachment.description }}</a>
+                    <button class="close delete-attachment" data-type="purchase"
+                            data-id="{{ attachment.id }}">
+                        <span class="icon-trash"></span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <br>
+
+            <div class="attach_file_field">
+                <label>
+                    <b>Add File: </b>
+                    <input type="file" name="attachments" required class="attachments"/>
+                </label>
+                <label>
+                    <b>Description: </b>
+                    <input type="text" name="captions" required class="captions">
+                </label>
+            </div>
+
+            <p><input type="button" class="btn add_file" value="Add Another File"/> <input type="submit"
+                                                                                           value="Save"
+                                                                                           class="btn"/></p>
+
+        </form>
+    </div>
+    <div id="bank_attach" class="tab-pane">
+        <form class="attachment-form" data-type="bank">
+            <div class="row-fluid">
+                {% for attachment in bank_attachments %}
+                <div class="span3">
+                    <a target="_blank"
+                       href="{{ MEDIA_URL }}{{ attachment.attachment }}">{{ attachment.description }}</a>
+                    <button class="close delete-attachment" data-type="bank" data-id="{{ attachment.id }}">
+                        <span class="icon-trash"></span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <br>
+
+            <div class="attach_file_field">
+                <label>
+                    <b>Add File: </b>
+                    <input type="file" name="attachments" required class="attachments"/>
+                </label>
+                <label>
+                    <b>Description: </b>
+                    <input type="text" name="captions" required class="captions">
+                </label>
+            </div>
+
+            <p><input type="button" class="btn add_file" value="Add Another File"/> <input type="submit"
+                                                                                           value="Save"
+                                                                                           class="btn"/></p>
+        </form>
+    </div>
+    <div id="other_attach" class="tab-pane">
+        <form class="attachment-form" data-type="other">
+            <div class="row-fluid">
+                {% for attachment in other_attachments %}
+                <div class="span3">
+                    <a target="_blank"
+                       href="{{ MEDIA_URL }}{{ attachment.attachment }}">{{ attachment.description }}</a>
+                    <button class="close delete-attachment" data-type="other" data-id="{{ attachment.id }}">
+                        <span class="icon-trash"></span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <br>
+
+            <div class="attach_file_field">
+                <label>
+                    <b>Add File: </b>
+                    <input type="file" name="attachments" required class="attachments"/>
+                </label>
+                <label>
+                    <b>Description: </b>
+                    <input type="text" name="captions" required class="captions">
+                </label>
+            </div>
+
+            <p><input type="button" class="btn add_file" value="Add Another File"/> <input type="submit"
+                                                                                           value="Save"
+                                                                                           class="btn"/></p>
+        </form>
+    </div>
+</div>
+</div>
+<!-- EO Attachment Tabs -->
+</div>
+<script type="text/javascript">
+    $(":input").attr("disabled",true);
+    $(":button").attr("disabled",true);
+    $(".icon-trash").attr("disabled",true);
+
+</script>
+{% endblock %}

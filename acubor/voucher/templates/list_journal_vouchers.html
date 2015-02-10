@@ -1,0 +1,78 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Journal Register{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_journal_vouchers" %}">Journal Register</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Journal Register
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load filters %}
+{% load humanize %}
+
+{% autosort objects as sorted_objects %}
+{% autopaginate sorted_objects 25 as paginated_objects %}
+<script src="{{ STATIC_URL }}js/watson_search.js"></script>
+<form method="post" action=".">{% csrf_token %}
+    <input style="height:20%;width:60%;align:center;" id="search-box" type="text" name="search-text" class="form-control" placeholder="Enter Keyword to Search"/>
+    <input class="btn btn-primary" type="submit" name="submit" value="Submit">
+    <div id="results" class="hidden" style="width:61%;height:200px;overflow:auto;"><table id="search-results" style="width:100%;border:1px solid rgba(0,0,0,0.2) ;align:center;"></table></div>
+
+</form>
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>{% anchor date 'Date' %}</th>
+    <th>Particulars</th>
+    <th>{% anchor voucher_no 'Voucher No.' %}</th>
+    <th>Debit Amount</th>
+    <th>Credit Amount</th>
+
+    </thead>
+    <tbody>
+    {% for item in paginated_objects %}
+    <tr>
+        {% if item.status == "Approved" %}
+        <td><a href="{% url 'update_journal_voucher' item.id %}" style="color:green"> {{ item.date|date:'m/d/Y' }}</a></td>
+        {% else %}
+        <td><a href="{% url 'update_journal_voucher' item.id %}" style="color:red"> {{ item.date|date:'m/d/Y' }}</a></td>
+        {% endif %}
+        <td>
+            {% for row in item.rows.all %}
+            <a href="{{ row.account.get_absolute_url }}">{{ row.account.name }}</a>
+            <br/>
+            {% endfor %}
+        </td>
+        <td><a href="{% url 'update_journal_voucher' item.id %}">{{ item.voucher_no }}</a></td>
+        <td style="text-align:right">
+            {% for row in item.rows.all %}
+            {{ row.dr_amount|if_not_none|if_not_zero|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            <br/>
+            {% endfor %}
+        </td>
+        <td style="text-align:right">
+            {% for row in item.rows.all %}
+            {{ row.cr_amount|if_not_none|if_not_zero|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            <br/>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% paginate %}
+
+<a class="btn" href="{% url 'new_journal_voucher' %}">New Journal Voucher</a>
+<script type="text/javascript">
+    new search_watson("/voucher/journals/search/");
+</script>
+
+{% endblock %}

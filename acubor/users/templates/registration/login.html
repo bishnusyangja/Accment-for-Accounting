@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
+        <div class="container">
+            <br/>
+            <br/>
+            <br/>
+            <div class="row">
+                <div class="span5 offset3 well" style="background-color:#d9edf7;">
+                    <legend style="border-color:#333">Please Sign In</legend>
+                    {% if form.errors %}
+                        <div class="alert alert-error">
+                            Incorrect Username or Password!
+                        </div>
+                    {% endif %}
+                    <form method="POST" action="{% url 'django.contrib.auth.views.login' %}" id="user_login_new" accept-charset="UTF-8">
+                        {% csrf_token %}
+                        {% if state %}
+                            {{ state }}
+                        {% endif %}
+                        <br/>
+                        {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}"/>
+                        {% endif %}
+                        <input type="text" id="id_username" value="{{ username }}" name="username" placeholder="Username" style="width:95%;" required/>
+                        <input type="password" id="password" value="{{ password }}" name="password" placeholder="Password" style="width:95%;" required/>
+                        <a class="pull-right" href="{% url 'auth_password_reset' %}">Forgot Password?</a>
+                        <label class="checkbox">
+                            <input type="checkbox" name="remember" value="1"> Remember Me
+                        </label>
+                        <br/>
+                        <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
+                        <br/>
+                        <a class="pull-left" href="/user/register/">Don't have an account? Signup</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+{% endblock %}

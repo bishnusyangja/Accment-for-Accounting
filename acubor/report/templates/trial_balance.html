@@ -1,0 +1,167 @@
+{% extends "dashboard.html" %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+
+<li><a href="{% url 'trial_balance' %}">Trial Balance</a></li>
+{% endblock %}
+
+{% block title %}Trial Balance{% endblock %}
+
+{% block extra-head %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/trial_balance.js"></script>
+{% endcompress %}
+<link href="{{ STATIC_URL }}css/vendors/jquery.treetable.css" rel="stylesheet" type="text/css"/>
+
+<script src="{{ STATIC_URL }}js/vendors/jquery.treetable.js"></script>
+<script>
+        $(document).ready(function () {
+            
+            {% load filters %}
+                ko.applyBindings(new TrialBalance({{ dict|jsonify }}));       
+            $(".tree-table").treetable({initialState: 'collapsed', clickableNodeNames: true, expandable: true });
+            $('.dateinput').datepicker({format:'mm/dd/yyyy',
+            });
+        });
+
+
+</script>
+
+
+{% endblock %}
+
+{% block pageheader %}
+Trial Balance
+<br/>
+<h4>
+    for period {{' '}} {{dict.start}} to {{dict.end}}
+</h4>
+{% endblock %}
+
+{% block content %}
+
+
+<div>
+    <form action="" method="POST" class="non-printable"> {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-warning alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <strong>{{form.errors}}</strong>
+        </div>
+        {% endif %}
+
+        <div class="row-fluid">
+            <div class="pull-left">
+                {{ 'From: ' }} {{form.start_date}}
+            </div>
+            <div class="pull-right">
+                {{ 'To: ' }} {{form.end_date}}
+            </div>
+        </div>
+        <input type="submit"  class="btn btn-primary" value="See Results"/>
+
+    </form>
+
+</div>
+
+<script id="categories" type="text/html">
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}, css: cls">
+        <td data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: name"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_opening_dr()))))||'', visible: !$root.option_opening_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_opening_cr()))))||'', visible: !$root.option_opening_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(transaction_dr()))))||'', visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(transaction_cr()))))||'', visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_transaction_dr()))))||'', visible: $root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_transaction_cr()))))||'', visible: $root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_dr()))))||''"></td>
+        <td style="text-align:right" data-bind="style: {fontWeight: (name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Income' || name == 'Expenses') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(net_cr()))))||''"></td>
+    </tr>
+    <!-- ko foreach: accounts -->
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}, css: cls">
+        <td><a data-bind="text: name, attr: {href:'/ledger/'+id }"></a></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;"  data-bind="text: zero_to_dash(znum(fnum(rnum(net_opening_dr()))))||'', visible: !$root.option_opening_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_opening_cr()))))||'', visible: !$root.option_opening_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(transaction_dr()))))||'', visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(transaction_cr()))))||'', visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_transaction_dr()))))||'', visible: $root.option_net_view && !$root.option_transactions_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_transaction_cr()))))||'', visible: $root.option_net_view && !$root.option_transactions_view()"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_dr()))))||''"></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_cr()))))||''"></td>
+    </tr>
+    <!-- /ko -->
+
+    <!-- ko template: { name: 'categories', foreach: categories } -->
+    <!-- /ko -->
+
+</script>
+
+
+<div class="controls non-printable">
+    <a onclick="$('.tree-table').treetable('expandAll'); return false;">Expand all</a>
+    <a data-bind="click: expandRoot">Expand Base Accounts</a>
+    <a onclick="$('.tree-table').treetable('collapseAll'); return false;">Collapse all</a>
+</div>
+<div class="printable">
+<table class="table table-bordered table-striped table-acubor table-sortable tree-table">
+    <thead>
+    <tr>
+        <th class="span4" rowspan=2 style="text-align:center">Particulars</th>
+        <th class="span4" colspan=2 style="text-align:center" data-bind="visible: !$root.option_opening_view()">Opening</th>
+        <th class="span4" colspan=2 style="text-align:center" data-bind="visible: !$root.option_net_view() && !$root.option_transactions_view()">Transaction</th>
+        <th class="span4" colspan=2 style="text-align:center"data-bind="visible: $root.option_net_view() && !$root.option_transactions_view()">Net</th>
+        <th class="span4" colspan=2 style="text-align:center">Closing</th>
+    </tr>
+    <tr>
+
+        <th class="span2" style="text-align:center" data-bind="visible: !$root.option_opening_view()">Debit Amount</th>
+        <th class="span2" style="text-align:center" data-bind="visible: !$root.option_opening_view()">Credit Amount</th>
+        <th class="span2" style="text-align:center" data-bind="visible: !$root.option_transactions_view()">Debit Amount</th>
+        <th class="span2" style="text-align:center" data-bind="visible: !$root.option_transactions_view()">Credit Amount</th>
+        <th class="span2" style="text-align:center">Debit Amount</th>
+        <th class="span2" style="text-align:center">Credit Amount</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <!-- ko template: { name: 'categories', foreach: categories } -->
+    <!-- /ko -->
+    <tr>
+        <td style="text-align:right;font-weight:bold;">TOTAL</td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(opening_dr_total())))), visible: !$root.option_opening_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(opening_cr_total())))), visible: !$root.option_opening_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_transaction_dr_total())))), visible: $root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(net_transaction_cr_total())))), visible: $root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(transaction_dr_total())))), visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(transaction_cr_total())))), visible: !$root.option_net_view() && !$root.option_transactions_view()"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(dr_total()))))"></td>
+        <td style="text-align:right;font-weight:bold;" data-bind="text: zero_to_dash(znum(fnum(rnum(cr_total()))))"></td>
+    </tr>
+    </tbody>
+</table>
+<div class="controls non-printable">
+    <a class="btn" data-bind="toggle: option_net_view, visible: !option_net_view() && !option_transactions_view()">Net View</a>
+    <a class="btn" data-bind="toggle: option_net_view, visible: option_net_view() && !option_transactions_view()">Transaction View</a>
+    <a class="btn" data-bind="toggle: option_opening_view, visible: !option_opening_view()">Hide Opening</a>
+    <a class="btn" data-bind="toggle: option_opening_view, visible: option_opening_view()">Show Opening</a>
+    <a class="btn" data-bind="toggle: option_transactions_view, visible: !option_transactions_view()">Hide Transactions</a>
+    <a class="btn" data-bind="toggle: option_transactions_view, visible: option_transactions_view()">Show Transactions</a>
+</div>
+<br/>
+<br/>
+<br/>
+</div>
+<style type="text/css">
+    @media print
+    {
+    	.non-printable { display: none; }
+    	.printable { display: block; }
+        a[href]:after {
+            content: none !important;
+        }
+    }
+</style>
+{% endblock %}

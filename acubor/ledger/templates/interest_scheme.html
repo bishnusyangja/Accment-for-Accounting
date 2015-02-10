@@ -1,0 +1,33 @@
+    {% extends base_template %}
+
+    {% block title %} {{ scenario }} Interest Scheme {% endblock %}
+
+    {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'list_interest_schemes' %}">Interest Scheme Register</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ scenario }} Interest Scheme</li>
+    {% endblock %}
+
+    {% block pageheader %}
+    {{ scenario }} Interest Scheme
+    {% endblock %}
+
+    {% block content %}
+
+            <script>
+                var scenario = "{{scenario}}"
+            </script>
+
+     <form  method="post">
+
+        {% csrf_token %}
+
+         {{ form.as_table }}
+         <br/>
+         <br/>
+         <input type="submit" value="Submit" class="btn btn-primary" />
+
+    </form>
+
+    {% endblock %}

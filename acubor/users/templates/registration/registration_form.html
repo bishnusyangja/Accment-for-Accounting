@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Register for an account{% endblock %}
+{% block content %}
+<script type="text/javascript">
+ var RecaptchaOptions = {
+    theme : 'clean'
+ };
+</script>
+<div class="container">
+    <div class="row">
+        <div class="span5 offset3 well" style="background-color:#d9edf7;">
+            <legend style="border-color:#333">Sign Up</legend>
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <form action="/user/register/" method='post' id="user_registration_new">
+                {% csrf_token %}
+                {% for field in form %}{{ field }}
+                        {% if field.errors %}
+                        <div class="arrow_box">{{ field.errors }}</div>
+                        {% endif %}
+                {% endfor %}
+                <br/>
+                <input type="submit" value="Register" class="btn btn-lg btn-primary btn-block"/>
+                <br/>
+                <a class="pull-left" href="/user/login/">Already have an account? Sign In</a>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+        $(function () {
+            $('input').focus(function () {
+                $(this).parent().prev('.errorlist').fadeOut(500);
+            });
+        });
+
+</script>
+{% endblock %}

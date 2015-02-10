@@ -1,0 +1,80 @@
+{% extends 'dashboard.html' %}
+
+    {% block title %}Cash Payment Register{% endblock %}
+    {% block breadcrumbs %}
+        {{ block.super }}
+        <li><a href="{% url 'list_cash_payments' %}">Cash Payment Register</a></li>
+    {% endblock %}
+
+
+    {% block pageheader %}
+        Cash Payment Register
+    {% endblock %}
+
+    {% block content %}
+    {% load voucher_filter %}
+        {% load filters %}
+        {% load humanize %}
+        {% load pagination_tags %}
+    {% load sorting_tags %}
+
+    {% autosort data_voucher as sorted_objects %}
+    {% autopaginate sorted_objects 25 as paginated_objects %}
+        <script src="{{ STATIC_URL }}js/watson_search.js"></script>
+        <form method="post" action=".">{% csrf_token %}
+            <input style="height:20%;width:60%;align:center;" id="search-box" type="text" name="search-text" class="form-control" placeholder="Enter Keyword to Search"/>
+            <input class="btn btn-primary" type="submit" name="submit" value="Submit">
+            <div id="results" class="hidden" style="width:61%;height:200px;overflow:auto;"><table id="search-results" style="width:100%;border:1px solid rgba(0,0,0,0.2) ;align:center;"></table></div>
+
+        </form>
+        <table class="table table-bordered table-striped table-sortable">
+            <thead>
+                <th>{% anchor date 'Date' %}</th>
+                <th>Voucher No</th>
+                <th>Cash Account</th>
+                <th>To Account</th>
+                <th>Reference No</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <!--<td colspan="2">Action</td>-->
+            </thead>
+            <tbody>
+            {% for item in paginated_objects %}
+            
+            {% with spn=item.rows.all|length %}
+            <tr>
+                {% if item.status == "Approved" %}
+                <td rowspan="{{spn}}"><a href="/voucher/cash-payment/{{item.id}}" style="color:green">{{ item.date|date:'m/d/Y' }}</a></td>
+                {% else %}
+                <td rowspan="{{spn}}"><a href="/voucher/cash-payment/{{item.id}}" style="color:red">{{ item.date|date:'m/d/Y' }}</a></td>
+                {% endif %}
+                <td rowspan="{{spn}}">{{ item.voucher_no }}</td>
+                <td rowspan="{{spn}}">{{ item.cash_account }}</td>
+                {% for row_data in item.rows.all %}
+                {% if forloop.first %}
+                    <td>{{ row_data.to_account }}</td>
+                    <td>{{ row_data.reference_no }}</td>
+                    <td style="text-align:right">{{ row_data.amount|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}</td>
+                    <td>{{ row_data.description}}</td>
+                {% endif %}
+             {% endfor %}
+            </tr>
+             {% for row_data in item.rows.all %}
+                {% if not forloop.first %}
+                <tr>
+                    <td>{{ row_data.to_account }}</td>
+                    <td>{{ row_data.reference_no }}</td>
+                    <td style="text-align:right">{{ row_data.amount|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}</td>
+                    <td>{{ row_data.description }}</td>
+                </tr>
+                {% endif %}
+             {% endfor %}
+            
+            {% endwith %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <script type="text/javascript">
+            new search_watson("/voucher/cash-payments/search/");
+        </script>
+    {% endblock %}

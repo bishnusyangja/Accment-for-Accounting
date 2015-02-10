@@ -1,0 +1,149 @@
+{% extends "dashboard.html" %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+
+<li><a href="{% url "balance_sheet" %}">Balance Sheet</a></li>
+{% endblock %}
+
+{% block title %}Balance Sheet{% endblock %}
+
+{% block extra-head %}
+{% load filters %}
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+
+<link href="{{ STATIC_URL }}css/vendors/jquery.treetable.css" rel="stylesheet" type="text/css"/>
+<script src="{{ STATIC_URL }}js/vendors/jquery.treetable.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/base.js"></script>
+<script src="{{ STATIC_URL }}js/balance_sheet.js"></script>
+{% endcompress %}
+<script>
+        $(document).ready(function () {
+                var vm = new BalanceSheet({{ dict|jsonify }});
+                ko.applyBindings(vm);
+            $(".tree-table").treetable({initialState: 'collapsed', clickableNodeNames: true, expandable: true });
+            $('.dateinput').datepicker({format:'mm/dd/yyyy'});
+            vm.expandRoot();
+        });
+
+
+</script>
+
+
+{% endblock %}
+
+{% block pageheader %}
+Balance Sheet
+<h4>
+    as on {{dict.end}}
+</h4>
+{% endblock %}
+
+{% block content %}
+
+
+<div>
+    <form action="" method="POST" class="non-printable"> {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-warning alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+              <strong>{{form.errors}}</strong>
+        </div>
+        {% endif %}
+        {{ 'Date:' }}
+        {{form.end_date}}
+        <br/>
+        <input type="submit" class="btn btn-primary" value="See Results"/>
+    </form>
+
+
+</div>
+
+<script id="categories" type="text/html">
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}, css: cls">
+        <td style="border-right:none;"
+            data-bind="style:{fontWeight: (name == 'Total Equity' || name == 'Total Assets' || name == 'Total Equity And Liabilities' || name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Total Liabilities') ? '900' : '400'}, text: name"></td>
+        <td style="text-align:right;border-left:none;border-right:none;"><span
+                data-bind="style: { textDecoration: (name == 'Total Assets' || name == 'Total Equity And Liabilities') ? 'underline' : 'none', borderBottom: (name == 'Total Equity' || name == 'Total Assets' || name == 'Total Equity And Liabilities' || name == 'Total Liabilities') ? '1px double #000' : 'none', textAlign: (name == 'Total Assets' || name == 'Total Equity And Liabilities' || name == 'Total Liabilities') ? 'right' : 'none', fontWeight: (name == 'Total Equity' || name == 'Total Assets' || name == 'Total Equity And Liabilities' || name == 'Assets' || name == 'Liabilities' || name == 'Equity' || name == 'Total Liabilities') ? '900' : '400'}, text: zero_to_dash(znum(fnum(rnum(Math.abs(amount())))))||'', css: { negformatbracket: amount() < 0 && amount() != 'undefined' }"></span>
+        </td>
+        <td style="border-left:none;text-align:right;">-</td>
+    </tr>
+    <!-- ko foreach: accounts -->
+    <tr data-bind="attr: {'data-tt-id': id, 'data-tt-parent-id': parent_id}, css: cls">
+        <td style="border-right:none;"><a data-bind="text: name, attr: {href:(name == 'Profit/Loss') ? '/report/profit-and-loss/' + '{{form.end_date.value}}'.split('/').join('-') : '/ledger/'+id }"></a></td>
+        <td style="font-weight:300;text-align:right;font-style:italic;border-left:none;border-right:none;"
+            data-bind="text: (zero_to_dash(znum(fnum(rnum(Math.abs(amount()))))))||'', css: { negformatbracket: amount() < 0 }"></td>
+        <td style="border-left:none;text-align:right;">-</td>
+    </tr>
+    <!-- /ko -->
+
+
+    <!-- ko template: { name: 'categories',
+                            foreach: categories } -->
+    <!-- /ko -->
+
+</script>
+
+
+<div class="controls non-printable">
+    <a onclick="$('.tree-table').treetable('expandAll'); return false;">Expand all</a>
+    <a data-bind="click: expandRoot">Expand Base Accounts</a>
+    <a onclick="$('.tree-table').treetable('collapseAll'); return false;">Collapse all</a>
+</div>
+
+<div class="printable" >
+    <table class="table table-bordered table-striped table-acubor table-sortable tree-table">
+        <thead>
+        <tr>
+            <th class="span5" rowspan=2 style="border-right:none;">Particulars</th>
+            <th class="span4" colspan=2 style="text-align:center;">Amount in USD</th>
+        </tr>
+        <tr>
+            <th class="span2" style="text-align:center;">Current Year</th>
+            <th class="span2" style="text-align:center;">Previous Year</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <!-- ko template: { name: 'categories',
+                                foreach: categories } -->
+        <!-- /ko -->
+
+        </tbody>
+    </table>
+<br/>
+<br/>
+<br/>
+</div>
+<!--<input type="button" onclick="printDiv('section-to-print')" value="print a div!" />-->
+<!--<style type="text/css">-->
+    <!--@media print {-->
+  <!--body * {-->
+    <!--visibility: hidden;-->
+  <!--}-->
+  <!--#section-to-print, #section-to-print * {-->
+    <!--visibility: visible;-->
+  <!--}-->
+  <!--#section-to-print {-->
+    <!--position: absolute;-->
+    <!--left: 2cm;-->
+    <!--top: 3cm;-->
+  <!--}-->
+<!--}-->
+<!--</style>-->
+
+<style type="text/css">
+    @media print
+    {
+    	.non-printable { display: none; }
+    	.printable { display: block; }
+        a[href]:after {
+            content: none !important;
+        }
+    }
+
+</style>
+{% endblock %}

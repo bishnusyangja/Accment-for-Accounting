@@ -1,0 +1,52 @@
+{% extends 'dashboard.html' %}
+
+
+{% block title %}User Settings{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li>User Settings</li>
+{% endblock %}
+
+{% block pageheader %}
+User Settings
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label for="full-name">Full Name</label>
+        <input name="full_name" id="full-name" value="{{ request.user.full_name }}">
+    </p>
+
+    <p>
+        <label for="full-name">E-mail</label>
+        <input name="email" id="email" value="{{ request.user.email }}">
+    </p>
+
+    <h3>Roles:</h3>
+    <table class="table table-bordered">
+        <thead>
+        <th>Company</th>
+        <th>Role</th>
+        </thead>
+        <tbody>
+        {% for role in request.user.roles.all %}
+        <tr>
+            <td>{{ role.company }}</td>
+            <td>{{ role.group }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <div class="row">
+        <div class="span12">
+            <input type="submit" class="btn" value="Save"/>
+        </div>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'blog.html' %}
+
+{% block title %}
+{{ obj.title }} | Blog |Acubor
+{% endblock %}
+
+{% block content %}
+<h1>{{ obj.title }}</h1>
+<div class="post-meta">
+    Posted by <a href="{% url 'view_blogs_by_author' obj.author.username %}">{{ obj.author.full_name }}</a>
+    on {{ obj.created }}
+    {% if obj.updated > obj.created %}
+    Last updated on {{ obj.updated }}
+    {% endif %}
+</div>
+{% if obj.author == user %}
+<br>
+<div><a href="{% url 'update_blog_entry' obj.id%}" class="btn btn-custom">Edit this blog</a></div>
+{% endif %}
+<br/>
+<p>
+    {{ obj.content|safe }}
+</p>
+{% endblock %}

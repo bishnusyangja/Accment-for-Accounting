@@ -1,0 +1,197 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Journal Voucher{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "list_journal_vouchers" %}">Journal Register</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<li><a href="{% url 'new_journal_voucher' %}">{{ scenario }} Journal Voucher</a></li>
+{% endblock %}
+
+{% load voucher_filter %}
+{% block extra-head %}
+{% load compress %}
+
+
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+<script src="{{ STATIC_URL }}js/vendors/jquery.maxlength-min.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/up_down.js"></script>
+<script src="{{ STATIC_URL }}js/journal_voucher.js"></script>
+{% endcompress %}
+<script>
+        {% load filters %}
+        ko_data = {{ data|jsonify }};
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">
+
+    <div data-bind="with: journal_voucher">
+        <div>
+            <h2 data-bind="css: state()">{{ "Journal Voucher" }}</h2>
+            <span data-bind="text: message()"></span>
+        </div>
+
+        {% csrf_token %}
+
+        Voucher No.:
+        <div class="input-append input-prepend input-mini dissolve">
+            <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.journal_voucher_prefix }}</span>
+            <input type="text" name="voucher_no" data-bind="value: $root.voucher_no" required/>
+            <span class="add-on">{{ request.user.currently_activated_company.voucher_settings.journal_voucher_suffix }}</span>
+        </div>
+
+        <div class="pull-right">
+            Date:
+            <input type="text" name="date" data-bind="value: $root.date"
+                   class="date-picker" required/>
+        </div>
+
+        <table id="journal-voucher-table" class="table table-bordered table-striped table-acubor table-sortable">
+            <thead>
+            <tr>
+                <th>Dr/Cr</th>
+                <th>Particular</th>
+                <th>Description</th>
+                <th>Dr Amount</th>
+                <th>Cr Amount</th>
+                <th class="span1"></th>
+            </tr>
+            </thead>
+
+            <tbody id="journal-voucher">
+            <!-- ko foreach: rows -->
+            <tr data-bind="flash: true">
+                <td>
+                    <select id="selection" style="width:50px;" data-bind="value:type">
+                        <option value="Dr">Dr</option>
+                        <option value="Cr">Cr</option>
+                    </select>
+                </td>
+                <td class="with_ip">
+                    <input type="hidden" data-url="{% url 'create_account' %}" data-to="accounts"
+                           data-bind="value: account, select2: $root.accounts_except_category(['Sales', 'Purchase'], true)">
+                </td>
+                <td>
+                    <input target="inside_td" data-bind="value: description"/>
+                </td>
+                <td>
+                    <input target="inside_td"
+                           data-bind="disable_content_editable: is_cr(),eval: dr_amount, value: dr_amount,  on_tab: $root.add_row"/>
+                </td>
+                <td>
+                    <input target="inside_td"
+                           data-bind="disable_content_editable: is_dr(),eval: cr_amount,value: cr_amount,   on_tab: $root.add_row"/>
+                </td>
+                <td align="center">
+                    <button type="button" class="btn-none" data-bind="click: $parent.removeRow" tabindex="-1">
+                        <i class="icon-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            <!-- /ko -->
+            <tr data-bind="css: total_row_class()">
+                <td colspan="3"><b>TOTAL</b></td>
+                <td style="text-align:right;"><u class="myUnderLine"
+                                                 data-bind="text: znum(fnum(rnum(dr_total()))) "></u></td>
+                <td style="text-align:right"><u class="myUnderLine" data-bind="text: znum(fnum(rnum(cr_total())))"></u>
+                </td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+        <button class="btn" data-bind="click: addRow"><i class="icon-plus-sign"></i> Add New Row</button>
+        <br/><br/>
+        Narration: <textarea name="narration" data-bind="value: $root.narration"></textarea>
+
+        <div style="float:right">
+            Attachment
+            <input type="file" name="attachment" id="attachment"/>
+            <br/>
+            <input class="btn btn-warning" type="button" value="Clear" id="clear-attachment" />
+                    {% if scenario == 'Update' and data.attachment %}
+            <br/>
+            <a class="span2" href="{{ MEDIA_URL }}{{data.attachment}}">{{data.attachment|filename}}</a><a id="delete-attachment" class="icon-trash icon-2x span2" href="/voucher/journal/attachment/delete/{{data.id}}" style="margin-left:5px;"></a>
+
+
+        {% endif %}
+        </div>
+
+        <br/>
+        <script type="text/javascript">
+                $('textarea').maxlength({
+                maxCharacters:200,
+                status:true,
+                statusClass:"status",
+                showAlert:true,
+                slider:true
+                });
+
+
+        </script>
+
+
+        <button class="btn" data-bind="click: save"><i class="icon-save"></i> Save</button>
+        <input class="btn" type="submit" value="Save & Continue" data-bind="click: save"
+               data-continue="true">
+
+        {% ifusergroup 'Owner' 'SuperOwner' 'Supervisor' %}
+        {% if approved %}
+        <a href="/voucher/journal/unapprove/{{data.id}}/" class="btn">Unapprove</a>
+        {% else %}
+        <a href="javascript: vm.journal_voucher.approve()" class="btn">Approve</a>
+        {% endif %}
+        {% endifusergroup %}
+        <input class="btn" type="submit" value="Cancel"
+               data-bind="click: $root.journal_voucher.cancel, visible: $root.status() != 'Cancelled'">
+        {% if scenario == 'Update' %}
+        <a class="btn btn-danger" href="{% url 'delete_journal_voucher' data.id %}">Delete</a>
+        {% endif %}
+
+    </div>
+</form>
+
+<script>
+            $(document).ready(function(){
+                if({{ approved }} == 1){
+                    $(':button').attr('disabled', true);
+                    $(':input').attr({'disabled':true});
+                    $(':input').removeAttr('data-bind');
+                    $('.btn-danger').hide();
+                    $('#delete-attachment').hide();
+                }
+
+                //move arrow up and down
+                $(document).click(function(){
+                arrow_handling();
+                });
+            })
+
+    function clearFileInput()
+    {
+        var oldInput = document.getElementById("attachment");
+
+        var newInput = document.createElement("input");
+
+        newInput.type = "file";
+        newInput.id = oldInput.id;
+        newInput.name = oldInput.name;
+        newInput.className = oldInput.className;
+        newInput.style.cssText = oldInput.style.cssText;
+        // copy any other relevant attributes
+
+        oldInput.parentNode.replaceChild(newInput, oldInput);
+    }
+
+    $('#clear-attachment').on('click', function(){
+        clearFileInput();
+    });
+</script>
+
+{% endblock %}

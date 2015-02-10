@@ -1,0 +1,298 @@
+    {% extends base_template %}
+
+    {% block title %} {{ scenario }} Account {% endblock %}
+
+    {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_account" %}">Accounts</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ scenario }} Account</li>
+    {% endblock %}
+
+    {% block pageheader %}
+        {{ scenario }} Account
+    {% endblock %}
+
+    {% block content %}
+
+    {% load compress %}
+    {% compress js %}
+            <script src="{{STATIC_URL}}js/account_form.js" ></script>
+            <script>
+                var scenario = "{{scenario}}"
+                var base = "{{ base_template }}"
+            </script>
+    {% endcompress %}
+
+     <form id="registrationForm" method="post" novalidate class="required">
+        {% csrf_token %}
+        <div>
+            <div>
+                {{ form.non_field_errors }}
+            </div >
+            <div >
+                {% if base_template == 'dashboard.html' %}
+
+        <div id="account-header-form" style="width:60%; height:20%;">
+            <div class="form-group" style="display:inline-block;">
+                {{ form.name.label_tag }}
+                    {{ form.name }}
+                    <div style="position:relative;">{{ form.name.errors }}</div>
+            </div>
+
+            <div class="form-group" style="margin-left:20px; display:inline-block;" >
+                {{ form.category.label_tag }}
+                    {{ form.category }}
+                <div style="position:relative;">{{ form.category.errors }}</div>
+            </div>
+
+        </div>
+
+        <div id="party_account" style="width:60%; height:20%; display:none;">
+            <div style="display:block;">
+                <div style="display:inline-block;">
+                    {{ party_form.party_address.label_tag }}
+                        {{ party_form.party_address }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >
+
+                    {{ party_form.party_email_address.errors }}
+                    {{ party_form.party_email_address.label_tag }}
+                        {{ party_form.party_email_address }}
+                </div>
+            </div>
+
+            <div style="display:block;">
+                <div style="display:inline-block;">
+                    {{ party_form.tin_no.errors }}
+                    {{ party_form.tin_no.label_tag }}
+                        {{ party_form.tin_no }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="account_tax" style="width:60%; height:20%; display:none;">
+
+            <div style="display:block;">
+                <div style="display:inline-block;">{{ acc_tax_form.pri_tax_scheme.label_tag }}
+                        {{ acc_tax_form.pri_tax_scheme }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >{{ acc_tax_form.sec_tax_scheme_1.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_1 }}
+                </div>
+            </div>
+
+            <div style="display:block;">
+                <div style="display:inline-block;">
+                    {{ acc_tax_form.sec_tax_scheme_2.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_2 }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >{{ acc_tax_form.sec_tax_scheme_3.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_3 }}
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <div id="bank_account" style="width:60%; height:20%; display:none;">
+
+            <div style="display:block;">
+                <div style="display:inline-block;">{{ bank_acc_form.bank_name.label_tag }}
+                        {{ bank_acc_form.bank_name }}
+                     {{ bank_acc_form.bank_name.errors }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >{{ bank_acc_form.bank_address.label_tag }}
+                        {{ bank_acc_form.bank_address }}
+                </div>
+            </div>
+
+            <div style="display:block;">
+                <div style="display:inline-block;">
+                    {{ bank_acc_form.contact_no.label_tag }}
+                    {{ bank_acc_form.contact_no }}
+                    {{ bank_acc_form.contact_no.errors }}
+                </div>
+
+                <div style="margin-left:20px; display:inline-block;" >
+
+                    {{ bank_acc_form.bank_email_address.label_tag }}
+                    {{ bank_acc_form.bank_email_address }}
+                    {{ bank_acc_form.bank_email_address.errors }}
+                </div>
+            </div>
+
+        </div>
+
+        <div style="display:block;">
+            <div style="display:inline-block;">
+                {{ form.opening_dr.errors }}
+                {{ form.opening_dr.label_tag }}
+                {{ form.opening_dr }}
+            </div>
+
+            <div style="margin-left:20px; display:inline-block;" >
+                {{ form.opening_cr.errors }}
+                {{ form.opening_cr.label_tag }}
+                {{ form.opening_cr }}
+            </div>
+        </div>
+
+        {% else %}
+
+        <div id="account-header-form" >
+            <div >{{ form.name.label_tag }}
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+
+            <div >{{ form.category.label_tag }}
+                    {{ form.category }}
+            </div>
+
+        </div>
+
+        <div id="bank_account" style="width:60%; height:20%; display:none;">
+                <div >{{ bank_acc_form.bank_name.label_tag }}
+                        {{ bank_acc_form.bank_name }}
+                </div>
+
+                <div  >{{ bank_acc_form.bank_address.label_tag }}
+                        {{ bank_acc_form.bank_address }}
+                </div>
+
+                <div >
+                    {{ bank_acc_form.contact_no.errors }}
+                    {{ bank_acc_form.contact_no.label_tag }}
+                        {{ bank_acc_form.contact_no }}
+                </div>
+
+                <div >
+                    {{ bank_acc_form.bank_email_address.errors }}
+                    {{ bank_acc_form.bank_email_address.label_tag }}
+                        {{ bank_acc_form.bank_email_address }}
+                </div>
+
+        </div>
+
+        <div id="party_account" >
+                <div >{{ party_form.party_address.label_tag }}
+                        {{ party_form.party_address }}
+                </div>
+
+                <div >
+                    {{ party_form.party_email_address.errors }}
+                    {{ party_form.party_email_address.label_tag }}
+                        {{ party_form.party_email_address }}
+                </div>
+
+                <div >
+                    {{ party_form.tin_no.errors }}
+                    {{ party_form.tin_no.label_tag }}
+                    {{ party_form.tin_no }}
+                </div>
+
+
+
+        </div>
+
+        <div id="account_tax" style="width:60%; height:20%; display:none;">
+
+                <div>{{ acc_tax_form.pri_tax_scheme.label_tag }}
+                        {{ acc_tax_form.pri_tax_scheme }}
+                </div>
+
+                <div >{{ acc_tax_form.sec_tax_scheme_1.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_1 }}
+                </div>
+
+                <div >
+                    {{ acc_tax_form.sec_tax_scheme_2.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_2 }}
+                </div>
+
+                <div >{{ acc_tax_form.sec_tax_scheme_3.label_tag }}
+                        {{ acc_tax_form.sec_tax_scheme_3 }}
+                </div>
+        </div>
+
+        <div >
+                {{ form.opening_dr.errors }}
+                {{ form.opening_dr.label_tag }}
+                {{ form.opening_dr }}
+            </div>
+
+            <div >
+                {{ form.opening_cr.errors }}
+                {{ form.opening_cr.label_tag }}
+                {{ form.opening_cr }}
+            </div>
+
+        {% endif %}
+
+        </div>
+        <div class="row">
+            <div class="span12">
+                <input id="submit-button" type="submit" value="Submit" class="btn"/>
+                {% if scenario == 'Update' %}
+                <a href="{% url 'delete_account' form.instance.id %}" class="btn btn-danger">Delete</a>
+                {% endif %}
+            </div>
+        </div>
+        </div>
+
+            <script>
+                $('.date-picker').datepicker({
+                format: 'mm/dd/yyyy',
+                endDate: '0d'
+                });
+                $('#id_opening_as_on_date').attr('disabled', 'true');
+
+                $(document).ready(function() {
+   /* $('#registrationForm').bootstrapValidator({
+        // To use feedback icons, ensure that you use Bootstrap v3.1.0 or later
+
+        fields: {
+            name: {
+                message: 'The username is not valid',
+                validators: {
+                    notEmpty: {
+                        message: 'Bishnu is fine'
+                    },
+                    stringLength: {
+                        min: 6,
+                        max: 30,
+                        message: 'The username must be more than 6 and less than 30 characters long'
+                    },
+                    regexp: {
+                        regexp: /^[a-zA-Z0-9]+$/,
+                        message: 'The username can only consist of alphabetical and number'
+                    }
+                }
+            }
+        }
+    });*/
+});
+            </script>
+
+    </form>
+
+{% if message %}
+<script>
+    bs_alert.success("{{ message }}");
+</script>
+{% endif %}
+
+
+    {% endblock %}

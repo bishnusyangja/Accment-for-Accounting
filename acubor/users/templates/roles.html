@@ -1,0 +1,67 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Company Roles{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "roles" %}">Company Roles</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Company Roles
+{% endblock %}
+
+
+{% block content %}
+
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>Full Name</th>
+    <th>Username</th>
+    <th>E-mail</th>
+    <th>Role</th>
+    <th>Action</th>
+    </thead>
+    <tbody>
+    {% for role in roles %}
+    <tr>
+        <td>{{ role.user.full_name }}</td>
+        <td>{{ role.user }}</td>
+        <td>{{ role.user.email }}</td>
+        <td>{{ role.group }}</td>
+        <td>{% if role.group.name != 'SuperOwner' %}
+            <a href="{% url 'delete_role' role.id %}">Delete</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Assign new roles to existing users:</h3>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="user" placeholder="Username or E-mail" required>
+    <select name="group" required>
+        <option selected="selected" value="">Select a Role</option>
+        <option value="Owner">Owner</option>
+        <option value="Accountant">Accountant</option>
+        <option value="Auditor">Auditor</option>
+        <option value="Supervisor">Supervisor</option>
+        <option value="Bookkeeper">Bookkeeper</option>
+        <option value="Employee">Employee</option>
+    </select>
+    <input style="position:absolute; margin-left:10px;" type="submit" value="Add" class="button">
+</form>
+
+<p><a href="{% url "request_new_user" %}">Want to add new users?</a></p>
+
+{% endblock %}

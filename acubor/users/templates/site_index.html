@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
+<script src="{{ STATIC_URL }}js/vendors/jquery.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
+<script src="{{STATIC_URL}}js/vendors/jquery.geocomplete.min.js" ></script>
+<div class="row">
+
+    <div class="span6">
+        <h2 class="intro">Login</h2>
+
+        <form method="post" action="{% url 'django.contrib.auth.views.login' %}" id="user_login_new">
+            {% csrf_token %}
+            {% if state %}
+            {{ state }}
+            {% endif %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}"/>
+            {% endif %}
+            <p class="required">
+                <label for="id_username">Username:</label>
+                <input type="text" name="username" id="id_username" value="{{ username }}" required/>
+            </p>
+
+            <p class="required">
+                <label for="id_password">Password:</label>
+                <input type="password" name="password" id="id_password" value="{{ username }}" required/>
+            </p>
+            <br>
+
+            <p>
+                <input type="checkbox" name="remember_me" id="remember-me" value="true"/>
+                <label class="inline" for="remember-me">Remember Me</label>
+            </p>
+            <br>
+
+            <p>
+                <input type="submit" value="Log In" class="btn"/>
+                <a href="{% url 'auth_password_reset' %}" style="color:black;">Forgot Password</a>
+            </p>
+        </form>
+    </div>
+    <div class="span5">
+        <h2 class="intro">Don't have an account? Register now</h2>
+
+        <form method='post' action='{% url 'registration_register' %}' id="user_registration_new">{% csrf_token %}
+        {{ registration_form.as_p }}
+        <br>
+        <input type="submit" value="Register" class="btn"/>
+        </form>
+    </div>
+</div>
+<script title="text/javascript">
+    $("#id_location").geocomplete();
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}css/vendors/bootstrap-responsive.min.css" rel="stylesheet"/>
+
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300"/>
+
+    <script src="{{ STATIC_URL }}js/vendors/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}js/vendors/bootstrap.js"></script>
+    <link href="{{ STATIC_URL }}css/base.css" rel="stylesheet"/>
+    {% block extra-head %}{% endblock %}
+
+    <style type="text/css">
+        h2 small{
+        font-size: 14px;
+        color: #ccc;
+        }
+        .blog-list{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        }
+        .page-content{
+        min-height: 600px;
+        }
+        .blog-list li{
+        margin-bottom: 40px;
+        }
+        .btn-custom , input[type='submit'], button[type='submit']{
+        background-color: hsl(201, 100%, 34%) !important;
+        background-repeat: repeat-x;
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#0098ea", endColorstr="#0070ad");
+        background-image: -khtml-gradient(linear, left top, left bottom, from(#0098ea), to(#0070ad));
+        background-image: -moz-linear-gradient(top, #0098ea, #0070ad);
+        background-image: -ms-linear-gradient(top, #0098ea, #0070ad);
+        background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #0098ea), color-stop(100%,
+        #0070ad));
+        background-image: -webkit-linear-gradient(top, #0098ea, #0070ad);
+        background-image: -o-linear-gradient(top, #0098ea, #0070ad);
+        background-image: linear-gradient(#0098ea, #0070ad);
+        border-color: #0070ad #0070ad hsl(201, 100%, 31%);
+        color: #fff !important;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.19);
+        -webkit-font-smoothing: antialiased;
+        }
+        .archive-list{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        }
+        .archive-list li{
+        margin: 6px 0px;
+        border-bottom: 1px solid #eee;
+        padding: 4px 0px;
+        }
+        .archive-list li:last-child{
+        border-bottom: 0;
+        }
+        #id_title, #id_content{
+        width: 100%;
+        }
+        .navbar-inverse a.brand{min-width: 100px;text-align: left;}
+    </style>
+
+</head>
+<body class="fixed-header useroff">
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="/"><img src="{{ STATIC_URL }}images/acubor.png"></a>
+
+        </div>
+    </div>
+</div>
+
+<div class="container page-content">
+    <br>
+    {% block content %}{% endblock %}
+</div>
+
+<footer class="footer">
+    {% block footer %}
+    <div class="container">
+        <p>Designed and built with all the love in the world</p>
+
+        <p>&copy; Copyrights All RIghts Reserved Acubor, 2014.</p>
+    </div>
+    {% endblock %}
+</footer>
+
+</body>
+</html>

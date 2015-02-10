@@ -1,0 +1,59 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Subscription Status{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="#">Subscription Status</a></li>
+{% endblock %}
+
+{% block pageheader %}
+Subscription Status
+{% endblock %}
+
+
+{% block content %}
+<div class="alert alert-info">
+Current subscription of this company i.e, {{ request.user.currently_activated_company.name }} is valid until 10/05/2014. To extend this subscription please make payments by clicking the following links. The duration of subscription extension and the corresponding payment amount required are mentioned below. Proceed with the corresponding payment scheme.
+</div>
+<div class="container">
+    <div class="row-fluid pricing-table pricing-three-column">
+        <div class="span4 plan">
+          <div class="plan-name-gold">
+            <h2>1 Month</h2>
+            <span>45.00 USD</span>
+          </div>
+          <ul>
+            <li class="plan-feature">Costs $45/mo</li>
+            <li class="plan-feature">You save $0.00</li>
+            <li class="plan-feature"><div id="cp13e34fc37c" style="margin: 10px 0" onclick="document.getElementById('pay_now_form_c807408053').submit()"><div><div class='r-bg '><span class='r-fg r-fg-3'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-0'></span> </div><form action="https://globalgatewaye4.firstdata.com/pay" id="pay_now_form_c807408053" method="post"><input name="x_login" type="hidden" value="WSP-ACUBO-HFCGIQAsyw" /><input name="x_show_form" type="hidden" value="PAYMENT_FORM" /><input name="x_fp_sequence" type="hidden" value="1409915439237302492" /><input name="x_fp_hash" type="hidden" value="PNB-1.0-33235b29d0fa07921d1bf822e28bab5ddccc3cfe" /><input name="x_amount" type="hidden" value="45" /><input name="x_currency_code" type="hidden" value="USD" /><input name="x_test_request" type="hidden" value="FALSE" /><input name="x_relay_response" type="hidden" value="" /><input name="donation_prompt" type="hidden" value="" /><input name="button_code" type="hidden" value="Pay Now Accment Plan Subscription" /><div class="cpwrap"><button type="button">Pay Now</button></div></form><div class='r-bg '><span class='r-fg r-fg-0'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-3'></span> </div></div></div><style type="text/css">div#cp13e34fc37c{width: 250px; background-color: #789e0f;}div#cp13e34fc37c:hover{cursor: pointer}div#cp13e34fc37c * {background-color: #7bd407;}div#cp13e34fc37c form{margin:0; padding:0;text-align:center}div#cp13e34fc37c div.cpwrap {width: 90%;border:0;margin:0 auto;padding: 0px; background-color: #789e0f}div#cp13e34fc37c button{width: 95%;border:0;margin:0;padding: 3px 0; background-color: #789e0f;text-align: center; color: #FFFFFF; }div#cp13e34fc37c:hover button {text-decoration: underline}div#cp13e34fc37c button:focus,div#cp13e34fc37c button:visited,div#cp13e34fc37c button:active{border:none;outline: none}div#cp13e34fc37c button {font-size: 16px}div#cp13e34fc37c div.cpwrap {border-left: 3px solid #7bd407; border-right: 3px solid #7bd407}div#cp13e34fc37c .r-fg{background-color: #7bd407; border-color: #7bd407}div#cp13e34fc37c .r-bg{background-color: white}div#cp13e34fc37c .r-fg{border-style: solid; border-width: 0px 1px; overflow: hidden; display: block; height: 1px; font-size: 1px}div#cp13e34fc37c .r-fg-0{margin-left: 1px; margin-right: 1px; border-width: 0px 1px !important; height: 1px !important}div#cp13e34fc37c .r-fg-1{margin-left: 2px; margin-right: 2px}div#cp13e34fc37c .r-fg-2{margin-left: 3px; margin-right: 3px}div#cp13e34fc37c .r-fg-3{margin-left: 5px; margin-right: 5px}</style>
+  </li>
+          </ul>
+        </div>
+        <div class="span4 plan">
+          <div class="plan-name-silver">
+            <h2>3 Months<span class="badge badge-warning">Popular</span></h2>
+            <span><strike>$135.00</strike>   <font color="red">$120</font></span>
+          </div>
+          <ul>
+            <li class="plan-feature">Costs $40/mo</li>
+            <li class="plan-feature">You save $15.00</li>
+            <li class="plan-feature"><div id="cp002d6e38eb" style="margin: 10px 0" onclick="document.getElementById('pay_now_form_e83d5c2745').submit()"><div><div class='r-bg '><span class='r-fg r-fg-3'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-0'></span> </div><form action="https://globalgatewaye4.firstdata.com/pay" id="pay_now_form_e83d5c2745" method="post"><input name="x_login" type="hidden" value="WSP-ACUBO-HFCGIQAsyw" /><input name="x_show_form" type="hidden" value="PAYMENT_FORM" /><input name="x_fp_sequence" type="hidden" value="14099151082481970130" /><input name="x_fp_hash" type="hidden" value="PNB-1.0-1c4dc5cbcaf4f813ece55fdc1e93a58c36d6eb02" /><input name="x_amount" type="hidden" value="120" /><input name="x_currency_code" type="hidden" value="USD" /><input name="x_test_request" type="hidden" value="FALSE" /><input name="x_relay_response" type="hidden" value="" /><input name="donation_prompt" type="hidden" value="" /><input name="button_code" type="hidden" value="Pay Now Accment Plan Subscription" /><div class="cpwrap"><button type="button">Pay Now</button></div></form><div class='r-bg '><span class='r-fg r-fg-0'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-3'></span> </div></div></div><style type="text/css">div#cp002d6e38eb{width: 250px; background-color: #0066ff;}div#cp002d6e38eb:hover{cursor: pointer}div#cp002d6e38eb * {background-color: #00a6ff;}div#cp002d6e38eb form{margin:0; padding:0;text-align:center}div#cp002d6e38eb div.cpwrap {width: 90%;border:0;margin:0 auto;padding: 0px; background-color: #0066ff}div#cp002d6e38eb button{width: 95%;border:0;margin:0;padding: 3px 0; background-color: #0066ff;text-align: center; color: #FFFFFF; }div#cp002d6e38eb:hover button {text-decoration: underline}div#cp002d6e38eb button:focus,div#cp002d6e38eb button:visited,div#cp002d6e38eb button:active{border:none;outline: none}div#cp002d6e38eb button {font-size: 16px}div#cp002d6e38eb div.cpwrap {border-left: 3px solid #00a6ff; border-right: 3px solid #00a6ff}div#cp002d6e38eb .r-fg{background-color: #00a6ff; border-color: #00a6ff}div#cp002d6e38eb .r-bg{background-color: white}div#cp002d6e38eb .r-fg{border-style: solid; border-width: 0px 1px; overflow: hidden; display: block; height: 1px; font-size: 1px}div#cp002d6e38eb .r-fg-0{margin-left: 1px; margin-right: 1px; border-width: 0px 1px !important; height: 1px !important}div#cp002d6e38eb .r-fg-1{margin-left: 2px; margin-right: 2px}div#cp002d6e38eb .r-fg-2{margin-left: 3px; margin-right: 3px}div#cp002d6e38eb .r-fg-3{margin-left: 5px; margin-right: 5px}</style></li>
+          </ul>
+        </div>
+        <div class="span4 plan">
+          <div class="plan-name-bronze">
+            <h2>12 Months</h2>
+            <span><strike>$540.00</strike>   <font color="red">$350</font></span>
+          </div>
+          <ul>
+            <li class="plan-feature">Costs $35/mo</li>
+            <li class="plan-feature">You save $60.00</li>
+            <li class="plan-feature"><div id="cpb4a5b41d44" style="margin: 10px 0" onclick="document.getElementById('pay_now_form_0c9e7293db').submit()"><div><div class='r-bg '><span class='r-fg r-fg-3'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-0'></span> </div><form action="https://globalgatewaye4.firstdata.com/pay" id="pay_now_form_0c9e7293db" method="post"><input name="x_login" type="hidden" value="WSP-ACUBO-HFCGIQAsyw" /><input name="x_show_form" type="hidden" value="PAYMENT_FORM" /><input name="x_fp_sequence" type="hidden" value="14099155504005215620" /><input name="x_fp_hash" type="hidden" value="PNB-1.0-27cf3616ed0ed06007b18bf12094b0922a958019" /><input name="x_amount" type="hidden" value="350" /><input name="x_currency_code" type="hidden" value="USD" /><input name="x_test_request" type="hidden" value="FALSE" /><input name="x_relay_response" type="hidden" value="" /><input name="donation_prompt" type="hidden" value="" /><input name="button_code" type="hidden" value="Pay Now Accment Plan Subscription" /><div class="cpwrap"><button type="button">Pay Now</button></div></form><div class='r-bg '><span class='r-fg r-fg-0'></span> <span class='r-fg r-fg-1'></span> <span class='r-fg r-fg-2'></span> <span class='r-fg r-fg-3'></span> </div></div></div><style type="text/css">div#cpb4a5b41d44{width: 250px; background-color: #9e2c0f;}div#cpb4a5b41d44:hover{cursor: pointer}div#cpb4a5b41d44 * {background-color: #de5c3c;}div#cpb4a5b41d44 form{margin:0; padding:0;text-align:center}div#cpb4a5b41d44 div.cpwrap {width: 90%;border:0;margin:0 auto;padding: 0px; background-color: #9e2c0f}div#cpb4a5b41d44 button{width: 95%;border:0;margin:0;padding: 3px 0; background-color: #9e2c0f;text-align: center; color: #FFFFFF; }div#cpb4a5b41d44:hover button {text-decoration: underline}div#cpb4a5b41d44 button:focus,div#cpb4a5b41d44 button:visited,div#cpb4a5b41d44 button:active{border:none;outline: none}div#cpb4a5b41d44 button {font-size: 16px}div#cpb4a5b41d44 div.cpwrap {border-left: 3px solid #de5c3c; border-right: 3px solid #de5c3c}div#cpb4a5b41d44 .r-fg{background-color: #de5c3c; border-color: #de5c3c}div#cpb4a5b41d44 .r-bg{background-color: white}div#cpb4a5b41d44 .r-fg{border-style: solid; border-width: 0px 1px; overflow: hidden; display: block; height: 1px; font-size: 1px}div#cpb4a5b41d44 .r-fg-0{margin-left: 1px; margin-right: 1px; border-width: 0px 1px !important; height: 1px !important}div#cpb4a5b41d44 .r-fg-1{margin-left: 2px; margin-right: 2px}div#cpb4a5b41d44 .r-fg-2{margin-left: 3px; margin-right: 3px}div#cpb4a5b41d44 .r-fg-3{margin-left: 5px; margin-right: 5px}</style></li>
+          </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

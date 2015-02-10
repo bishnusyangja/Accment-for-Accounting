@@ -1,0 +1,38 @@
+    {% extends base_template %}
+
+    {% block title %} {{ scenario }} Tax Scheme {% endblock %}
+
+    {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'list_tax_schemes' %}">Tax Schemes</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ scenario }} Tax Scheme</li>
+    {% endblock %}
+
+    {% block pageheader %}
+    {{ scenario }} Tax Scheme
+    {% endblock %}
+
+    {% block content %}
+
+            <script>
+                var scenario = "{{scenario}}"
+            </script>
+{%  if msg %}
+    <div class="alert alert-warning alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{msg}}</strong>
+    </div>
+{% endif %}
+     <form  method="post">
+
+        {% csrf_token %}
+
+         {{ form.as_table }}
+         <br/>
+         <br/>
+         <input type="submit" value="Submit" class="btn btn-primary" />
+
+    </form>
+
+    {% endblock %}

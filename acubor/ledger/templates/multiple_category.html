@@ -1,0 +1,80 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ scenario }} Multiple Category{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="/ledger/categories">Category Register</a></li>
+<span class="divider"><i class="icon-angle-right"></i></span>
+<!--<li><a href="#">Attendance Voucher</a></li>-->
+{% endblock %}
+
+{% load filters %}
+
+{% block extra-head %}
+
+{% load compress %}
+<script src="{{ STATIC_URL }}js/vendors/knockout.js"></script>
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ko_lib.js"></script>
+<script src="{{ STATIC_URL }}js/up_down.js"></script>
+<script src="{{ STATIC_URL }}js/multiple_category.js"></script>
+{% endcompress %}
+{% endblock %}
+
+{% block content-pageheader %}
+{{ scenario }} Multiple Category
+{% endblock %}
+{% block content %}
+
+        <div class="row-fluid" data-bind="with: particulars">
+
+            <input type="hidden" name="particulars" data-bind="value: ko.toJSON($data, null, 2)"/>
+
+            <table class="table table-bordered table-striped table-acubor table-sortable">
+                <thead>
+                <tr>
+                    <th style="text-align:center;" >SN</th>
+                    <th style="text-align:center;">Name</th>
+                    <th style="text-align:center;" >Parent Category</th>
+                    <th style="text-align:center;" >Action</th>
+                </tr>
+                </thead>
+
+                <tbody id="particulars-body">
+                <!-- ko foreach: rows -->
+                <tr>
+                    <td class="with_ip">
+                        <div class="drag_handle"><i class="icon-ellipsis-vertical"></i>
+                        </div>
+                        <span class="wid-pad pull-left" data-bind="text:  $index()+1"> </span>
+                    </td>
+                   <td><input style="text-align:right" target = "inside_td" data-bind="value: name"  /></td>
+
+                    <td><input type="hidden" data-url="{% url 'create_category' %}" data-to="categories" data-name="Category"
+                               data-bind="value: parent, select2: $root.categories"></td>
+                    <td>
+                        <button type="button" class="btn-none" data-bind="click: $parent.removeRow"><i class="icon-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr>
+                    <td colspan="4">
+                        <a id="add-row" class="btn" data-bind="click: addRow">
+                            <i class="icon-plus-sign"></i> Add New Row
+                        </a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+            <br/>
+            <a class="btn" data-bind="click: $root.our_save">
+                            <i class="icon-save"></i> Save
+                        </a>
+
+        </div>
+
+{% endblock %}
+

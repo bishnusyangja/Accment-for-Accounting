@@ -1,0 +1,78 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Invoice Register{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="{% url "all_invoices" %}">Invoice Register</a></li>
+{% endblock %}
+
+{% block extra-head %}
+<script type="text/javascript">
+        $(document).ready(function () {
+            $('.date-range').each(function (i, el) {
+                $(el).find('input').datepicker({
+                    format: 'yyyy-mm-dd'
+                });
+            });
+        });
+</script>
+{% endblock %}
+
+{% block pageheader %}
+Invoice Register
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load filters %}
+{% load humanize %}
+
+{% autosort objects as sorted_objects %}
+{% autopaginate sorted_objects 25 as paginated_objects %}
+        <script src="{{ STATIC_URL }}js/watson_search.js"></script>
+        <form method="post" action=".">{% csrf_token %}
+            <input style="height:20%;width:60%;align:center;" id="search-box" type="text" name="search-text" class="form-control" placeholder="Enter Keyword to Search"/>
+            <input class="btn btn-primary" type="submit" name="submit" value="Submit">
+            <div id="results" class="hidden" style="width:61%;height:200px;overflow:auto;">
+                <table id="search-results" style="width:100%;border:1px solid rgba(0,0,0,0.2) ;align:center;">
+
+                </table>
+            </div>
+        </form>
+<table class="table table-bordered table-striped table-sortable">
+    <thead>
+    <th>{% anchor date 'Date' %}</th>
+    <th>Invoice No</th>
+    <th>To</th>
+    <th>Description</th>
+    <th>Amount</th>
+    </thead>
+    <tbody>
+    {% for item in paginated_objects %}
+
+    <tr>
+        {% if item.status == "Approved" %}
+        <td><a href="{% url 'view_invoice' item.id %}" style="color:green"> {{ item.date|date:'m/d/Y' }}</a></td>
+        {% else %}
+        <td><a href="{% url 'view_invoice' item.id %}" style="color:red"> {{ item.date|date:'m/d/Y' }}</a></td>
+        {% endif %}
+        <td>{{ item.voucher_no }}</td>
+        <td>{{ item.party }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.total_amount|if_not_none|if_not_zero|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% paginate %}
+
+<a class="btn" href="{% url 'new_invoice' %}">New Invoice</a>
+<script type="text/javascript">
+     new search_watson("/voucher/invoices/search/");
+</script>
+
+{% endblock %}

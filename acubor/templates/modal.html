@@ -1,0 +1,20 @@
+<div class="modal-header">
+    <a class="close" data-dismiss="modal" id="but-close" >&times;</a>
+
+    <h3>{% block pageheader %}{% endblock %}</h3>
+</div>
+<div class="modal-body">
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+<script>
+    $('#but-close').click(function(){
+        var no_of_modals = $('.modal').length;
+        $('#modal' + $('.modal').length).modal('hide');
+        $('#modal' + $('.modal').length).remove();
+    });
+
+</script>
+

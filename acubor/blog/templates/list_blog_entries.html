@@ -1,0 +1,35 @@
+{% extends 'blog.html' %}
+
+{% load pagination_tags %}
+
+{% block title %}
+Blog Posts
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% autopaginate objs 25 as paginated_objs %}
+    <ul class="blog-list">
+        {% for obj in paginated_objs %}
+        <li>
+            <h2>
+                <a href="{% url 'view_blog_entry'  obj.id %}">{{ obj.title }}</a>
+                <br>
+                <small>Posted at: {{ obj.created }}</small>
+            </h2>
+            <br>
+
+            <div>
+                {{ obj.content | truncatewords:50 | safe }}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% paginate %}
+    <br>
+    {% if user.is_authenticated %}
+    <a class="btn btn-custom" href="{% url 'create_blog_entry' %}">Create New Blog Entry</a>
+    {% endif %}
+</div>
+{% endblock %}

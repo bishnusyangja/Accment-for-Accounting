@@ -1,0 +1,46 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Request New User{% endblock %}
+
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="#">Request New User</a></li>
+{% endblock %}
+
+
+{% block content %}
+        <form method="post" action=".">
+            {% csrf_token %}
+            {% if error %}
+            <div class="alert alert-warning fade in">
+                <button class="close" aria-hidden="true" data-dismiss="alert" type="button">×</button>
+                <strong>{{error}}</strong>
+            </div>
+            {% endif %}
+            <div style="float:left; margin-right:50px;">
+            <label for="id-username">Username</label>
+            <input type="text" id="id-username" placeholder="Enter UserName" name="username" required>
+            <label for="id-email">Email</label>
+            <input type="email" id="id-email" placeholder="Enter Email" name="email" required>
+            <label for="id-full-name">Full Name</label>
+            <input type="text" id="id-full-name" placeholder="Enter Full Name" name="fullname" required>
+            <br/>
+            <select name="group" required>
+                <option selected="selected" value="">Select a Role</option>
+                <option value="Owner">Owner</option>
+                <option value="Accountant">Accountant</option>
+                <option value="Auditor">Auditor</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="Bookkeeper">Bookkeeper</option>
+                <option value="Employee">Employee</option>
+            </select>
+            <br/>
+            <input style="float:center;" type="submit" value="Submit" name="submit"  class="btn btn-primary"/>
+        </div>
+        </form>
+
+
+<script type="text/javascript">
+    $(".alert").alert();
+</script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "dashboard.html" %}
+
+{% block title %}{{ inventory_account.item.name }}{{' Stock Book'}}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url "list_all_items" %}">Stock Items</a></li>
+    <span class="divider"><i class="icon-angle-right"></i></span>
+    <li>{{ inventory_account.item.name }}{{ ' Stock Book' }}</li>
+{% endblock %}
+
+{% block pageheader %}
+{{ inventory_account.item.name }}{{' Stock Book'}}
+{% endblock %}
+
+{% block content %}
+
+{% load pagination_tags %}
+{% load sorting_tags %}
+{% load filters %}
+{% load humanize %}
+{% load users_extra_filters %}
+{% load ledger_filters %}
+
+{% autosort inventory_entries  as sorted_inventory_entries %}
+{% autopaginate sorted_inventory_entries 25 as paginated_sorted_inventory_entries %}
+{% load compress %}
+<div class="pull-right">
+    {% paginate %}
+</div>
+<table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th class="span2" style="text-align:center">Date</th>
+        <th class="span3" style="text-align:center">Voucher Type</th>
+        <th class="span1" style="text-align:center">Vch No.</th>
+        <th class="span2" style="text-align:center">In Quantity</th>
+        <th class="span2" style="text-align:center">In Rate</th>
+        <th class="span2" style="text-align:center">In Amount</th>
+        <th class="span2" style="text-align:center">Out Quantity</th>
+        <th class="span2" style="text-align:center">Out Rate</th>
+        <th class="span2" style="text-align:center">Out Amount</th>
+        <th class="span2" style="text-align:center">Balance Quantity</th>
+        <th class="span2" style="text-align:center">Balance Rate</th>
+        <th class="span2" style="text-align:center">Balance Amount</th>
+        </thead>
+
+        <tbody>
+        {% for entry in paginated_sorted_inventory_entries %}
+        <tr id="row-{{ entry.id }}">
+            <td class="span2" style="text-align:center">
+            {{ entry.date }}
+            </td>
+            <td class="span3" style="text-allign:center">
+                {{ entry.content_type.name }}
+            </td>
+            <td class="span1" style="text-allign:center">
+                {{ entry.source.get_voucher_number }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.in_quantity|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.in_rate|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.in_amount|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.out_quantity|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.out_rate|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.out_amount|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.get_balance_quantity|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.get_balance_rate|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+            <td class="span2" style="text-align:right">
+                {{ entry.get_balance_amount|if_not_none|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma }}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+<div class="pull-right">
+    {% paginate %}
+</div>
+{% endblock %}
+

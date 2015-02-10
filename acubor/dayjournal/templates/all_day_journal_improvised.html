@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+{% extends "dashboard.html" %}
+{% block title %}Day Journal Register {% endblock %}
+{% block breadcrumbs %}
+{{ block.super }}
+<li><a href="/day/journals2/{% now "Y" %} ">Day Journal Register</a></li>
+{% endblock %}
+{% block extra-head %}
+<!--<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>-->
+{% endblock %}
+{% block pageheader %}
+Day Journal Register
+{% endblock %}
+
+{% block content %}
+{% load day_filters %}
+{% load filters %}
+{% load humanize %}
+{% load pagination_tags %}
+{% load sorting_tags %}
+
+<div class="row-fluid">
+    <div class="pull-right">
+        <input type="text" id="day-journal-date" class="date-picker" placeholder="Pick a date..." />
+        <button id="day-journal-selection-button" class="btn btn-mini">Go</button>
+    </div>
+    <div class="pull-left">
+    <span style="text-align:left;">Select A Year</span>&nbsp;<select id="bish">
+    {% for i in year_list %}
+    <option value="{{i}}">{{i}}</option>
+    {% endfor %}
+</select>
+<button id="butt" class="btn btn-mini">Go</button>
+</div>
+</div>
+
+
+
+
+<script type="text/javascript">
+        $("#bish").select2();
+        $("#butt").click(function(){
+           var a = $("#bish").val();
+           window.location= "/day/journals2/"+a;
+        });
+
+</script>
+<script type="text/javascript">
+            $('.date-picker').datepicker({
+                endDate:'0d',
+                format: 'mm/dd/yyyy',
+
+            });
+            $(document).ready(function(){
+            //$('.mytable').hide();
+            //$('#0').show();
+            var this_month = new Date().getMonth() + 1;
+            var el = "#pagination"+this_month;
+            var temp = this_month-1;
+            $(el).parent().attr('class', 'active');
+            $('.mytable').hide();
+            $("#"+temp).show();
+            $('#day-journal-date').click(function(){
+                $('div.datepicker').removeAttr('style');
+                $('div.datepicker').css({
+                    'display': 'block',
+                     'top': '229px',
+                      'left': '992px'
+                });
+            });
+
+        })
+        $("#day-journal-selection-button").click(function(){
+            var a = $("#day-journal-date").val();
+            if(a!='undefined' && a!=""){
+                a = a.split('/');
+                var temp = a[2]+'-'+a[0]+'-'+a[1];
+                window.location = "/day/"+temp;
+            }
+            else{
+                //$("#day-journal-date").datepicker('update', new Date());
+                window.location = "/day/";
+            }
+
+        })
+ </script>
+<br/>
+<br/>
+
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li><a class="page" id="pagination1" href="#0" data-toggle="tab">January</a></li>
+        <li><a class="page" id="pagination2" href="#1" data-toggle="tab">February</a></li>
+        <li><a class="page" id="pagination3" href="#2" data-toggle="tab">March</a></li>
+        <li><a class="page" id="pagination4" href="#3" data-toggle="tab">April</a></li>
+        <li><a class="page" id="pagination5" href="#4" data-toggle="tab">May</a></li>
+        <li><a class="page" id="pagination6" href="#5" data-toggle="tab">June</a></li>
+        <li><a class="page" id="pagination7" href="#6" data-toggle="tab">July</a></li>
+        <li><a class="page" id="pagination8" href="#7" data-toggle="tab">August</a></li>
+        <li><a class="page" id="pagination9" href="#8" data-toggle="tab">September</a></li>
+        <li><a class="page" id="pagination10" href="#9" data-toggle="tab">October</a></li>
+        <li><a class="page" id="pagination11" href="#10" data-toggle="tab">November</a></li>
+        <li><a class="page" id="pagination12" href="#11" data-toggle="tab">December</a></li>
+    </ul>
+    <div class="tab-content">
+        {% for item in dat.18 %}
+        {% with i=forloop.counter0 %}
+
+        <div class="mytable " id="{{i}}">
+            <table id="mytablee" border="1" class="table table-bordered table-striped table-acubor">
+                <thead>
+                <tr>
+                    <th rowspan="2" style="text-align:center">
+                        Date
+                    </th>
+                    <th colspan="6" style="text-align:center">
+                        Collections
+                    </th>
+                    <th colspan="3" style="text-align:center">
+                        Sales Made Through
+                    </th>
+                    <th colspan="4" style="text-align:center">
+                        Payments/Deposits
+                    </th>
+
+                </tr>
+                <tr>
+                    {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <th>
+                        Fuel
+                    </th>
+                    {% endif %}
+                    {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                    <th>
+                        Lotto Scratch-Off
+                    </th>
+                    {% endif %}
+                    <th>
+                        Inside
+                    </th>
+                    <th>
+                        Transfer Remittance
+                    </th>
+                    <th>
+                        Total
+                    </th>
+                    <th>
+                        Total Tax
+                    </th>
+
+                    <th>
+                        Cash
+                    </th>
+                    <th>
+                        Other Than Cash
+                    </th>
+                    <th>
+                        Total
+                    </th>
+                    <th>
+                        Vendor
+                    </th>
+                    <th>
+                        Other
+                    </th>
+                    <th>
+                        Deposits
+                    </th>
+                    <th>
+                        Total
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+
+                {% for it in item %}
+                {% with j=forloop.counter0 %}
+
+                <tr>
+                    <td>{% if dat.17|index:i|index:j|index:2 == "Approved" %}
+                        <a style="color:green" href="/day/{{dat.17|index:i|index:j|index:0|date:'Y-m-d'}}">
+                        {{dat.17|index:i|index:j|index:0|date:"m/d/Y"}}</a>
+                        {% else %}
+                        <a style="color:red" href="/day/{{dat.17|index:i|index:j|index:0|date:'Y-m-d'}}">
+                        {{dat.17|index:i|index:j|index:0|date:"m/d/Y"}}</a>
+                        {% endif %}
+                    </td>
+                    <!--Date-->
+                    {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <td style="text-align:right">{{ dat.1|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    {% endif %}
+                    <!--Fuel-->
+                    {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                    <td style="text-align:right">{{ dat.18|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    {% endif %}
+                    <!--Lotto-->
+                    <td style="text-align:right">{{ dat.2|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    <!--Inside-->
+                    <td style="text-align:right">{{ dat.20|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    <!--Remittance-->
+                    <td style="text-align:right"><strong>{{ dat.3|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Total-->
+                    <td style="text-align:right"><strong>{{ dat.4|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Totax tax-->
+                    <td style="text-align:right">{{ dat.7|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    <!--Cash-->
+                    <td style="text-align:right">{{ dat.6|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</td>
+                    <!--Other Cash-->
+                    <td style="text-align:right"><strong>{{ dat.5|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Mathiko cash ko total-->
+
+                    <td style="text-align:right"><strong>{{ dat.8|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Vendor Paidout-->
+                    <td style="text-align:right"><strong>{{ dat.23|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong>
+                    </td>
+                    <!--other Paidout-->
+                    <td style="text-align:right"><strong>{{ dat.24|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong>
+                    </td>
+                    <!--deposit Paidout-->
+                    <td style="text-align:right"><strong>{{ dat.27|index:i|index:j|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong>
+                    </td>
+                    <!--total Paidout-->
+                    <!--{% with arg=dat.27|index:i|index:j value=dat.5|index:i|index:j %}-->
+                    <!--<td style="text-align:right"><strong>{{value|subtracting:arg|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma|negativeformat|safe}}</strong></td>-->
+                    <!--{% endwith %}-->
+
+
+                </tr>
+                {% endwith %}
+                {% endfor %}
+
+                <tr>
+                    <td colspan="1" style="text-align:center"><strong>TOTAL</strong></td>
+                    {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <td style="text-align:right"><strong>{{dat.1|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    {% endif %}
+                    <!--Fuel total-->
+                    {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                    <td style="text-align:right"><strong>{{dat.18|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    {% endif %}
+                    <!--Lotto total-->
+                    <td style="text-align:right"><strong>{{dat.2|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Inside total-->
+                    <td style="text-align:right"><strong>{{dat.20|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Remittance total-->
+                    <td style="text-align:right"><strong>{{dat.3|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total ko total-->
+                    <td style="text-align:right"><strong>{{dat.4|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Taax total-->
+                    <td style="text-align:right"><strong>{{dat.7|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Cash total-->
+                    <td style="text-align:right"><strong>{{dat.6|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Other cash total-->
+                    <td style="text-align:right"><strong>{{dat.5|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total of total-->
+                    <td style="text-align:right"><strong>{{dat.8|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Vendor Paidout total-->
+                    <td style="text-align:right"><strong>{{dat.23|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--other Paidout-->
+                    <td style="text-align:right"><strong>{{dat.24|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--deposit Paidout-->
+                    <td style="text-align:right"><strong>{{dat.27|index:i|total|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total Paidout-->
+
+                    <!--{% with argu=dat.27|index:i|total valuee=dat.5|index:i|total %}-->
+                    <!--<td style="text-align:right"><strong>{{valuee|subtracting:argu|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma|negativeformat|safe}}</strong></td>-->
+                    <!--{% endwith %}-->
+
+                </tr>
+
+                <tr>
+                    <td colspan="1" style="text-align:center"><strong>YTD</strong></td>
+                    {% if request.user.currently_activated_company.settings.inventory_tracking %}
+                    <td style="text-align:right"><strong>{{dat.1|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    {% endif %}
+                    <!--Fuel total-->
+                    {% if request.user.currently_activated_company.settings.lotto_tracking %}
+                    <td style="text-align:right"><strong>{{dat.18|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    {% endif %}
+                    <!--Lotto total-->
+                    <td style="text-align:right"><strong>{{dat.2|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Inside total-->
+                    <td style="text-align:right"><strong>{{dat.20|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Remittance total-->
+                    <td style="text-align:right"><strong>{{dat.3|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total ko total-->
+                    <td style="text-align:right"><strong>{{dat.4|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Taax total-->
+                    <td style="text-align:right"><strong>{{dat.7|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Cash total-->
+                    <td style="text-align:right"><strong>{{dat.6|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Other cash total-->
+                    <td style="text-align:right"><strong>{{dat.5|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total of total-->
+                    <td style="text-align:right"><strong>{{dat.8|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--Vendor Paidout total-->
+                    <td style="text-align:right"><strong>{{dat.23|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--other Paidout-->
+                    <td style="text-align:right"><strong>{{dat.24|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--deposit Paidout-->
+                    <td style="text-align:right"><strong>{{dat.27|cumsumtot:i|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma}}</strong></td>
+                    <!--total Paidout-->
+
+                    <!--{% with argu=dat.27|index:i|total valuee=dat.5|index:i|total %}-->
+                    <!--<td style="text-align:right"><strong>{{valuee|subtracting:argu|floatformat:request.user.currently_activated_company.settings.decimal_places|intcomma|negativeformat|safe}}</strong></td>-->
+                    <!--{% endwith %}-->
+
+                </tr>
+
+
+                </tbody>
+            </table>
+        </div>
+        {%endwith%}
+        {%endfor%}
+
+
+    </div>
+    <!-- /.tab-content -->
+</div><!-- /.tabbable -->
+
+
+<script>
+var l = {{dat.18|length}};
+$('.page').click(function(){
+    var a = $(this).attr('id');
+    $('.mytable').hide();
+    a = a.replace('pagination', '');
+    a = Number(a) -1;
+    $('#'+a).show();
+});
+</script>
+
+
+{% endblock %}
+
+

@@ -1,0 +1,60 @@
+{% extends "dashboard.html" %}
+{% load payroll_filter %}
+{% block title %}Bank Accounts{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url 'day_attendance_register' %}">Day Attendance Register</a></li>
+{% endblock %}
+
+{% block pageheader %}
+    Day Attendance Register
+{% endblock %}
+
+
+{% block content %}
+    <table class="table table-bordered table-striped table-sortable">
+        <thead>
+        <th>Date</th>
+        <th>Name of Employee</th>
+        <th>Voucher Type</th>
+        <th>Voucher No.</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Total Working Days</th>
+        <th>Full Present Days</th>
+        <th>Half Present Days</th>
+        <th>Early/Late Attendance Days</th>
+        <th>Total Present Days</th>
+        <th>Total Absent Days</th>
+        <th>Total OT Hours</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            <tr>
+            <td>{{ item.date }}</td>
+            <td>{{ item.employee }}</td>
+            <td>Day Attendance</td>
+            <td>{{ item.voucher_no }}</td>
+            <td>{{ item.from_date }}</td>
+            <td>{{ item.to_date }}</td>
+            <td>{{ item.total_working_days|dash }}</td>
+            <td>{{ item.full_present_day|dash }}</td>
+            <td>{{ item.half_present_day|dash }}</td>
+            <td>{{ item.early_late_attendance_day|dash }}</td>
+            <td>{{ item.full_present_day|add:item.half_present_day|add:item.early_late_attendance_day }}</td>
+            <td>{{ item.total_working_days|subtract:item.full_present_day|subtract:item.half_present_day|subtract:item.early_late_attendance_day}}</td>
+            <td>{{item.total_ot_hours|dash}}</td>
+            <td>
+                <a href ="/payroll/day-attendance-voucher/{{item.id}}/">Edit</a>
+            </td>
+
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+
+
